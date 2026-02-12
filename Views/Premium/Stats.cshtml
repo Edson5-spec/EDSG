@@ -1,0 +1,59 @@
+﻿@* Views/Premium/Stats.cshtml *@
+@model EDSG.Controllers.PremiumStatsViewModel
+
+@{
+    ViewData["Title"] = "Estatísticas Premium";
+}
+
+<div class="container py-5">
+    <h1 class="text-center mb-5">@ViewData["Title"]</h1>
+
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-primary">@Model.TotalPremiumUsers</h3>
+                    <p class="text-muted">Total Premium</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-success">@Model.PremiumUsersThisMonth</h3>
+                    <p class="text-muted">Este Mês</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-warning">€@Model.RevenueThisMonth.ToString("F2")</h3>
+                    <p class="text-muted">Receita Mensal</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-info">@Model.ConversionRate.ToString("F1")%</h3>
+                    <p class="text-muted">Taxa Conversão</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h5>Categorias Mais Populares</h5>
+            <ul class="list-group">
+                @foreach (var category in Model.TopCategories) {
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>@category.Category</span>
+                        <span class="badge bg-primary rounded-pill">@category.Count</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>

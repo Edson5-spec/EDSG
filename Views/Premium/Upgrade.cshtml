@@ -1,0 +1,138 @@
+﻿@* Views/Premium/Upgrade.cshtml *@
+@model EDSG.Controllers.UpgradeViewModel
+
+@{
+    ViewData["Title"] = "Fazer Upgrade";
+}
+
+<style>
+    .hover-shadow:hover {
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+        transform: translateY(-2px);
+        transition: all 0.3s ease;
+    }
+
+    .border-3 {
+        border-width: 3px !important;
+    }
+
+    .price {
+        color: #0d6efd;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold text-primary mb-3">
+                    <i class="bi bi-rocket-takeoff me-2"></i>Fazer Upgrade
+                </h1>
+                <p class="lead text-muted">
+                    Escolha o plano perfeito para impulsionar sua carreira
+                </p>
+            </div>
+
+            <div class="row g-4 mb-5">
+                @foreach (var plan in Model.Plans) {
+                    <div class="col-md-4">
+                        <div class="card h-100 hover-shadow @(plan.IsPopular ? "border-primary border-3 shadow-lg" : "border-secondary")">
+                            @if (plan.IsPopular) {
+                                <div class="position-absolute top-0 start-50 translate-middle">
+                                    <span class="badge bg-primary rounded-pill py-2 px-3">
+                                        <i class="bi bi-star-fill me-1"></i>Popular
+                                    </span>
+                                </div>
+                            }
+
+                            <div class="card-header text-center py-4 @(plan.IsPopular ? "bg-primary text-white" : "bg-light text-dark")">
+                                <h4 class="card-title mb-2">@plan.Name</h4>
+                                <div class="price display-4 fw-bold">
+                                    €@plan.Price.ToString("F2")
+                                </div>
+                                <div class="text-muted small">por @plan.Period</div>
+                            </div>
+
+                            <div class="card-body">
+                                <ul class="list-unstyled mb-4">
+                                    @foreach (var feature in plan.Features) {
+                                        <li class="mb-2">
+                                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                            @feature
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+
+                            <div class="card-footer bg-transparent text-center">
+                                @if (Model.SelectedPlan == plan.Id) {
+                                    <button class="btn btn-primary w-100" disabled>
+                                        <i class="bi bi-check-lg me-2"></i>Selecionado
+                                    </button>
+                                } else {
+                                    <a href="@Url.Action("Upgrade", "Premium", new { plan = plan.Id })"
+                                       class="btn btn-outline-primary w-100">
+                                        Selecionar
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="card mb-5">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-credit-card me-2"></i>Informações de Pagamento
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-action="ProcessUpgrade">
+                        @Html.AntiForgeryToken()
+
+                        <div class="alert alert-info">
+                            <strong>Plano selecionado:</strong>
+                            @Model.Plans.FirstOrDefault(p => p.Id == Model.SelectedPlan)?.Name
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email para faturação</label>
+                                <input name="UserEmail" class="form-control" value="@Model.UserEmail" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Método de Pagamento</label>
+                                <select name="PaymentMethod" class="form-select">
+                                    <option value="credit_card">Cartão de Crédito</option>
+                                    <option value="debit_card">Cartão de Débito</option>
+                                    <option value="paypal">PayPal</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="SelectedPlan" value="@Model.SelectedPlan" />
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Index" class="btn btn-outline-secondary me-md-2">
+                                <i class="bi bi-arrow-left me-2"></i>Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="bi bi-lock me-2"></i>Finalizar Upgrade
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (!confirm('Confirmar upgrade para o plano selecionado?')) {
+            e.preventDefault();
+        }
+    });
+</script>

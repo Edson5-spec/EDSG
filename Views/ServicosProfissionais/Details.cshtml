@@ -1,0 +1,37 @@
+﻿@model EDSG.Models.ServicoProfissional
+@{
+    ViewData["Title"] = "Detalhes do Serviço";
+}
+
+<div class="container">
+    <h1>@Model.Nome</h1>
+    <dl class="row">
+        <dt class="col-sm-3">Descrição:</dt>
+        <dd class="col-sm-9">@Model.Descricao</dd>
+
+        <dt class="col-sm-3">Categoria:</dt>
+        <dd class="col-sm-9">@Model.Categoria</dd>
+
+        <dt class="col-sm-3">Preço (€):</dt>
+        <dd class="col-sm-9">@Model.Preco.ToString("F2")</dd>
+
+        <dt class="col-sm-3">Tempo Estimado:</dt>
+        <dd class="col-sm-9">@Model.TempoEstimado</dd>
+
+        <dt class="col-sm-3">Ativo:</dt>
+        <dd class="col-sm-9">@Model.IsAtivo ? "Sim" : "Não"</dd>
+
+        <dt class="col-sm-3">Data Criação:</dt>
+        <dd class="col-sm-9">@Model.DataCriacao.ToString("dd/MM/yyyy")</dd>
+    </dl>
+
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Editar</a>
+
+    <form asp-action="Remover" asp-route-id="@Model.Id" method="post" style="display:inline-block;"
+          onsubmit="return confirm('Tem a certeza que quer remover este serviço?');">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-danger">Remover</button>
+    </form>
+
+    <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+</div>

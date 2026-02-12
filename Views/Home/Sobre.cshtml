@@ -1,0 +1,294 @@
+﻿@{
+    ViewData["Title"] = "Sobre Nós";
+}
+
+<div class="container">
+    <!-- Hero Section -->
+    <div class="row align-items-center mb-5">
+        <div class="col-lg-6">
+            <h1 class="display-4 fw-bold mb-4">Sobre a <span class="text-primary">EDSG</span></h1>
+            <p class="lead mb-4">
+                O Ecossistema Digital de Serviços Geridos (EDSG) é uma plataforma inovadora que conecta
+                profissionais qualificados com clientes que necessitam de serviços de qualidade.
+            </p>
+            <div class="d-flex flex-wrap gap-3">
+                <a asp-controller="Home" asp-action="Procurar" class="btn btn-primary btn-lg">
+                    <i class="bi bi-search"></i> Procurar Profissionais
+                </a>
+                @if (!User.Identity.IsAuthenticated) {
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-person-plus"></i> Junte-se a Nós
+                    </a>
+                }
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+                 class="img-fluid rounded shadow-lg" alt="Equipe EDSG">
+        </div>
+    </div>
+
+    <!-- Mission & Vision -->
+    <div class="row mb-5">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="mb-4">
+                        <i class="bi bi-bullseye display-1 text-primary"></i>
+                    </div>
+                    <h3 class="card-title mb-3">Nossa Missão</h3>
+                    <p class="card-text">
+                        Conectar profissionais talentosos com clientes que valorizam qualidade,
+                        criando um ecossistema digital eficiente e confiável para serviços geridos.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="mb-4">
+                        <i class="bi bi-eye display-1 text-success"></i>
+                    </div>
+                    <h3 class="card-title mb-3">Nossa Visão</h3>
+                    <p class="card-text">
+                        Ser a principal plataforma digital para serviços geridos em Portugal,
+                        reconhecida pela excelência, inovação e impacto positivo na economia local.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Values -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-5">Nossos Valores</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-start border-primary border-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-shield-check text-primary display-6"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h4 class="card-title mb-0">Confiança</h4>
+                                </div>
+                            </div>
+                            <p class="card-text">
+                                Garantimos transparência e segurança em todas as transações.
+                                Cada profissional é verificado para sua total tranquilidade.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-start border-success border-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-star text-success display-6"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h4 class="card-title mb-0">Qualidade</h4>
+                                </div>
+                            </div>
+                            <p class="card-text">
+                                Comprometemo-nos com a excelência em cada serviço prestado.
+                                Nossos padrões de qualidade são rigorosos e consistentes.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-start border-warning border-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-people text-warning display-6"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h4 class="card-title mb-0">Comunidade</h4>
+                                </div>
+                            </div>
+                            <p class="card-text">
+                                Valorizamos as relações humanas e construímos uma comunidade
+                                forte de profissionais e clientes satisfeitos.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-5">Conheça Nossa Equipa</h2>
+            <div class="row justify-content-center">
+                <div class="col-md-4 mb-4">
+                    <div class="card text-center border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="mb-3">
+                                <div class="mx-auto rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                                     style="width: 120px; height: 120px;">
+                                    <span class="display-4">MR</span>
+                                </div>
+                            </div>
+                            <h4 class="card-title">Miguel Rodrigues</h4>
+                            <p class="text-muted mb-3">CEO & Fundador</p>
+                            <p class="card-text">
+                                Com 15 anos de experiência em tecnologia e gestão, lidera a visão estratégica da EDSG.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card text-center border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="mb-3">
+                                <div class="mx-auto rounded-circle bg-success text-white d-flex align-items-center justify-content-center"
+                                     style="width: 120px; height: 120px;">
+                                    <span class="display-4">AS</span>
+                                </div>
+                            </div>
+                            <h4 class="card-title">Ana Silva</h4>
+                            <p class="text-muted mb-3">CTO</p>
+                            <p class="card-text">
+                                Especialista em desenvolvimento de plataformas digitais com foco em experiência do usuário.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card text-center border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="mb-3">
+                                <div class="mx-auto rounded-circle bg-info text-white d-flex align-items-center justify-content-center"
+                                     style="width: 120px; height: 120px;">
+                                    <span class="display-4">PC</span>
+                                </div>
+                            </div>
+                            <h4 class="card-title">Pedro Costa</h4>
+                            <p class="text-muted mb-3">Head of Community</p>
+                            <p class="card-text">
+                                Responsável pelo crescimento e engajamento da nossa comunidade de profissionais.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body p-5">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-4">
+                            <h2 class="display-4 fw-bold">500+</h2>
+                            <p class="mb-0">Profissionais</p>
+                        </div>
+                        <div class="col-md-3 mb-4">
+                            <h2 class="display-4 fw-bold">10K+</h2>
+                            <p class="mb-0">Serviços Realizados</p>
+                        </div>
+                        <div class="col-md-3 mb-4">
+                            <h2 class="display-4 fw-bold">4.8</h2>
+                            <p class="mb-0">Avaliação Média</p>
+                        </div>
+                        <div class="col-md-3 mb-4">
+                            <h2 class="display-4 fw-bold">98%</h2>
+                            <p class="mb-0">Clientes Satisfeitos</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="row">
+        <div class="col-12">
+            <h2 class="text-center mb-5">Como Funciona a Plataforma</h2>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="step-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                     style="width: 50px; height: 50px;">
+                                    <i class="bi bi-person-plus"></i>
+                                </div>
+                                <div>
+                                    <h4 class="card-title mb-2">Para Profissionais</h4>
+                                    <ol class="list-unstyled">
+                                        <li class="mb-2"><strong>1.</strong> Crie seu perfil detalhado</li>
+                                        <li class="mb-2"><strong>2.</strong> Defina seus serviços e preços</li>
+                                        <li class="mb-2"><strong>3.</strong> Receba pedidos de clientes</li>
+                                        <li class="mb-2"><strong>4.</strong> Realize serviços e seja avaliado</li>
+                                        <li><strong>5.</strong> Cresça sua reputação e ganhe mais</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="step-number bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                     style="width: 50px; height: 50px;">
+                                    <i class="bi bi-search"></i>
+                                </div>
+                                <div>
+                                    <h4 class="card-title mb-2">Para Clientes</h4>
+                                    <ol class="list-unstyled">
+                                        <li class="mb-2"><strong>1.</strong> Procure por categoria ou localização</li>
+                                        <li class="mb-2"><strong>2.</strong> Compare profissionais e avaliações</li>
+                                        <li class="mb-2"><strong>3.</strong> Entre em contacto direto</li>
+                                        <li class="mb-2"><strong>4.</strong> Combine detalhes e preço</li>
+                                        <li><strong>5.</strong> Avalie o serviço após conclusão</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card bg-gradient-primary text-white">
+                <div class="card-body text-center p-5">
+                    <h2 class="mb-4">Pronto para Fazer Parte?</h2>
+                    <p class="lead mb-4">
+                        Junte-se a milhares de profissionais e clientes que já transformaram
+                        a forma como encontram e oferecem serviços.
+                    </p>
+                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                        @if (!User.Identity.IsAuthenticated) {
+                            <a asp-controller="Account" asp-action="Register" class="btn btn-light btn-lg">
+                                <i class="bi bi-person-plus"></i> Criar Conta Gratuita
+                            </a>
+                        }
+                        <a asp-controller="Home" asp-action="Procurar" class="btn btn-outline-light btn-lg">
+                            <i class="bi bi-search"></i> Explorar Profissionais
+                        </a>
+                        <a asp-controller="Home" asp-action="Contactos" class="btn btn-outline-light btn-lg">
+                            <i class="bi bi-envelope"></i> Contactar-nos
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

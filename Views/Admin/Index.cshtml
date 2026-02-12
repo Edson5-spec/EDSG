@@ -1,0 +1,212 @@
+﻿@model EDSG.Controllers.AdminStatsViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3 mb-0">
+                <i class="bi bi-speedometer2 text-danger"></i> Admin Dashboard
+            </h1>
+            <p class="text-muted mb-0">Estatísticas e gestão do sistema</p>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white-50 mb-1">Utilizadores</h6>
+                            <h3 class="mb-0">@Model.TotalUsers</h3>
+                        </div>
+                        <i class="bi bi-people display-6 opacity-50"></i>
+                    </div>
+                    <div class="mt-2">
+                        <small class="opacity-75">@Model.TotalProfessionals profissionais</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white-50 mb-1">Serviços</h6>
+                            <h3 class="mb-0">@Model.TotalServices</h3>
+                        </div>
+                        <i class="bi bi-briefcase display-6 opacity-50"></i>
+                    </div>
+                    <div class="mt-2">
+                        <small class="opacity-75">@Model.PendingServices pendentes</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white-50 mb-1">Denúncias</h6>
+                            <h3 class="mb-0">@Model.PendingReports</h3>
+                        </div>
+                        <i class="bi bi-flag display-6 opacity-50"></i>
+                    </div>
+                    <div class="mt-2">
+                        <small class="opacity-75">Pendentes de revisão</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white-50 mb-1">Ativos</h6>
+                            <h3 class="mb-0">@Model.ActiveServices</h3>
+                        </div>
+                        <i class="bi bi-play-circle display-6 opacity-50"></i>
+                    </div>
+                    <div class="mt-2">
+                        <small class="opacity-75">Serviços em progresso</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Recent Services -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Serviços Recentes</h5>
+                    <a asp-controller="Admin" asp-action="Services" class="btn btn-sm btn-outline-primary">
+                        Ver Todos
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Título</th>
+                                    <th>Cliente</th>
+                                    <th>Profissional</th>
+                                    <th>Data</th>
+                                    <th>Estado</th>
+                                    <th>Preço</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var servico in Model.RecentServices) {
+                                    <tr>
+                                        <td>@servico.Titulo</td>
+                                        <td>@servico.Cliente.Nome</td>
+                                        <td>@servico.Profissional.Nome</td>
+                                        <td>@servico.DataPedido.ToString("dd/MM/yyyy")</td>
+                                        <td>
+                                            <span class="badge @GetStatusBadgeClass(servico.Estado)">
+                                                @servico.Estado
+                                            </span>
+                                        </td>
+                                        <td>€@servico.PrecoAcordado.ToString("F2")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-lightning-charge"></i> Ações Rápidas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-controller="Admin" asp-action="Users" class="btn btn-outline-primary">
+                            <i class="bi bi-people"></i> Gerir Utilizadores
+                        </a>
+                        <a asp-controller="Admin" asp-action="Services" class="btn btn-outline-success">
+                            <i class="bi bi-briefcase"></i> Gerir Serviços
+                        </a>
+                        <a asp-controller="Admin" asp-action="Reports" class="btn btn-outline-warning">
+                            <i class="bi bi-flag"></i> Ver Denúncias
+                        </a>
+                        <a asp-controller="Admin" asp-action="SystemStats" class="btn btn-outline-info">
+                            <i class="bi bi-graph-up"></i> Estatísticas
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Users -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-person-plus"></i> Utilizadores Recentes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        @foreach (var user in Model.RecentUsers) {
+                            <div class="list-group-item border-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                                             style="width: 40px; height: 40px;">
+                                            <span>@user.Nome.Substring(0, 1)</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-0">@user.Nome</h6>
+                                        <small class="text-muted">@user.Email</small>
+                                        <div class="mt-1">
+                                            @if (user.IsAdmin) {
+                                                <span class="badge bg-danger">Admin</span>
+                                            }
+                                            @if (user.IsPremium) {
+                                                <span class="badge bg-warning">Premium</span>
+                                            }
+                                            @if (!string.IsNullOrEmpty(user.Categoria)) {
+                                                <span class="badge bg-success">Profissional</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusBadgeClass(EstadoServico status) {
+        return status switch {
+            EstadoServico.Pendente => "bg-warning",
+            EstadoServico.Aceite => "bg-primary",
+            EstadoServico.EmProgresso => "bg-info",
+            EstadoServico.Concluido => "bg-success",
+            EstadoServico.Recusado => "bg-secondary",
+            EstadoServico.Cancelado => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+}

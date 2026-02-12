@@ -1,0 +1,393 @@
+﻿@model EDSG.Models.Denuncia
+@{
+    ViewData["Title"] = $"Denúncia #{Model.Id}";
+}
+
+@functions {
+    string GetStatusBadgeClass(EstadoDenuncia status) {
+        return status switch {
+            EstadoDenuncia.Pendente => "bg-warning",
+            EstadoDenuncia.EmAnalise => "bg-info",
+            EstadoDenuncia.Resolvida => "bg-success",
+            EstadoDenuncia.Rejeitada => "bg-secondary",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetStatusIcon(EstadoDenuncia status) {
+        return status switch {
+            EstadoDenuncia.Pendente => "bi-clock-history",
+            EstadoDenuncia.EmAnalise => "bi-search",
+            EstadoDenuncia.Resolvida => "bi-check-circle",
+            EstadoDenuncia.Rejeitada => "bi-x-circle",
+            _ => "bi-question-circle"
+        };
+    }
+
+    string GetServiceStatusBadgeClass(EstadoServico status) {
+        return status switch {
+            EstadoServico.Pendente => "bg-warning",
+            EstadoServico.Aceite => "bg-primary",
+            EstadoServico.EmProgresso => "bg-info",
+            EstadoServico.Concluido => "bg-success",
+            EstadoServico.Recusado => "bg-secondary",
+            EstadoServico.Cancelado => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Reports">Denúncias</a></li>
+                    <li class="breadcrumb-item active">#@Model.Id</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-auto">
+            <a asp-action="Reports" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Voltar
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Column - Report Details -->
+        <div class="col-lg-8">
+            <!-- Report Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-flag-fill me-2"></i>Denúncia #@Model.Id
+                    </h5>
+                    <span class="badge @GetStatusBadgeClass(Model.Estado) py-2 px-3">
+                        <i class="bi @GetStatusIcon(Model.Estado) me-1"></i>
+                        @Model.Estado
+                    </span>
+                </div>
+                <div class="card-body">
+                    <!-- Report Content -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Descrição da Denúncia</h6>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h5 class="text-danger mb-3">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>Denúncia #@Model.Id
+                                </h5>
+                                <p class="mb-0">@Model.Descricao</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Involved Parties -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">
+                                <i class="bi bi-person-badge me-2"></i>Denunciante
+                            </h6>
+                            <div class="card">
+                                <div class="card-body">
+                                    @if (Model.Denunciante != null) {
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="avatar me-3">
+                                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                                                     style="width: 50px; height: 50px;">
+                                                    <span>@Model.Denunciante.Nome.Substring(0, 1)</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">@Model.Denunciante.Nome</h6>
+                                                <small class="text-muted">@Model.Denunciante.Email</small>
+                                            </div>
+                                        </div>
+                                        <div class="small">
+                                            <div class="mb-1">
+                                                <i class="bi bi-telephone text-muted me-2"></i>
+                                                @(Model.Denunciante.PhoneNumber ?? "Não especificado")
+                                            </div>
+                                            <div>
+                                                <i class="bi bi-calendar text-muted me-2"></i>
+                                                @{
+                                                    var dataRegistroDenunciante = Model.Denunciante.DataRegistro != DateTime.MinValue ?
+                                                    Model.Denunciante.DataRegistro.ToString("dd/MM/yyyy") : "N/A";
+                                                }
+                                                Registo: @dataRegistroDenunciante
+                                            </div>
+                                        </div>
+                                    } else {
+                                        <div class="text-center text-muted py-3">
+                                            <i class="bi bi-person-x display-4"></i>
+                                            <p class="mt-3">Utilizador não encontrado</p>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="card-footer bg-white">
+                                    <a asp-action="ViewUserProfile" asp-route-id="@Model.DenuncianteId"
+                                       class="btn btn-sm btn-outline-primary w-100">
+                                        <i class="bi bi-eye me-1"></i> Ver Perfil
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">
+                                <i class="bi bi-person-x me-2"></i>Denunciado
+                            </h6>
+                            <div class="card">
+                                <div class="card-body">
+                                    @if (Model.Denunciado != null) {
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="avatar me-3">
+                                                <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center"
+                                                     style="width: 50px; height: 50px;">
+                                                    <span>@Model.Denunciado.Nome.Substring(0, 1)</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">@Model.Denunciado.Nome</h6>
+                                                <small class="text-muted">@Model.Denunciado.Email</small>
+                                            </div>
+                                        </div>
+                                        <div class="small">
+                                            <div class="mb-1">
+                                                <i class="bi bi-tag text-muted me-2"></i>
+                                                @(Model.Denunciado.Categoria ?? "Cliente")
+                                            </div>
+                                            <div>
+                                                <i class="bi bi-calendar text-muted me-2"></i>
+                                                @{
+                                                    var dataRegistroDenunciado = Model.Denunciado.DataRegistro != DateTime.MinValue ?
+                                                    Model.Denunciado.DataRegistro.ToString("dd/MM/yyyy") : "N/A";
+                                                }
+                                                Registo: @dataRegistroDenunciado
+                                            </div>
+                                        </div>
+                                    } else {
+                                        <div class="text-center text-muted py-3">
+                                            <i class="bi bi-person-x display-4"></i>
+                                            <p class="mt-3">Utilizador não encontrado</p>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="card-footer bg-white">
+                                    <a asp-action="ViewUserProfile" asp-route-id="@Model.DenunciadoId"
+                                       class="btn btn-sm btn-outline-danger w-100">
+                                        <i class="bi bi-eye me-1"></i> Ver Perfil
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Related Service -->
+                    @if (Model.Servico != null) {
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3">
+                                <i class="bi bi-briefcase me-2"></i>Serviço Relacionado
+                            </h6>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">@Model.Servico.Titulo</h6>
+                                            <p class="small text-muted mb-2">@Model.Servico.Descricao</p>
+                                            <div class="d-flex gap-2">
+                                                <span class="badge @GetServiceStatusBadgeClass(Model.Servico.Estado)">
+                                                    @Model.Servico.Estado
+                                                </span>
+                                                <span class="badge bg-primary">
+                                                    €@Model.Servico.PrecoAcordado.ToString("F2")
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="small text-muted mb-1">
+                                                <i class="bi bi-calendar me-1"></i>
+                                                @Model.Servico.DataPedido.ToString("dd/MM/yyyy")
+                                            </div>
+                                            <a href="#" class="btn btn-sm btn-outline-info">
+                                                <i class="bi bi-eye"></i> Ver Serviço
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Timeline -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">
+                            <i class="bi bi-clock-history me-2"></i>Linha do Tempo
+                        </h6>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-primary"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Denúncia Recebida</h6>
+                                    <p class="small text-muted mb-0">
+                                        @Model.DataDenuncia.ToString("dd/MM/yyyy HH:mm")
+                                    </p>
+                                </div>
+                            </div>
+                            @if (Model.DataResolucao.HasValue) {
+                                <div class="timeline-item">
+                                    <div class="timeline-marker bg-success"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="mb-1">Resolvida</h6>
+                                        <p class="small text-muted mb-0">
+                                            @Model.DataResolucao.Value.ToString("dd/MM/yyyy HH:mm")
+                                        </p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Actions & Notes -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-lightning-charge me-2"></i>Ações Rápidas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form asp-action="UpdateReportStatus" method="post" id="statusForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+
+                        <div class="mb-3">
+                            <label class="form-label">Alterar Status</label>
+                            <select class="form-select" name="status" required>
+                                <option value="0" selected="@(Model.Estado == EstadoDenuncia.Pendente)">Pendente</option>
+                                <option value="1" selected="@(Model.Estado == EstadoDenuncia.EmAnalise)">Em Análise</option>
+                                <option value="2" selected="@(Model.Estado == EstadoDenuncia.Resolvida)">Resolvida</option>
+                                <option value="3" selected="@(Model.Estado == EstadoDenuncia.Rejeitada)">Rejeitada</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Notas Internas</label>
+                            <textarea class="form-control" name="adminNotes" rows="4"
+                                      placeholder="Adicione notas sobre a resolução...">@Model.NotasAdmin</textarea>
+                            <div class="form-text">Visível apenas para administradores</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i> Atualizar Status
+                            </button>
+                            <button type="button" class="btn btn-outline-warning"
+                                    onclick="markAsUnderReview(@Model.Id)">
+                                <i class="bi bi-search me-1"></i> Em Análise
+                            </button>
+                            <button type="button" class="btn btn-outline-success"
+                                    onclick="markAsResolved(@Model.Id)">
+                                <i class="bi bi-check-circle me-1"></i> Resolver
+                            </button>
+                            <button type="button" class="btn btn-outline-danger"
+                                    onclick="markAsRejected(@Model.Id)">
+                                <i class="bi bi-x-circle me-1"></i> Rejeitar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Admin Notes -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-chat-left-text me-2"></i>Notas de Administração
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if (string.IsNullOrEmpty(Model.NotasAdmin)) {
+                        <div class="text-center text-muted py-3">
+                            <i class="bi bi-chat-left display-4"></i>
+                            <p class="mt-3">Nenhuma nota adicionada</p>
+                        </div>
+                    } else {
+                        <div class="bg-light rounded p-3">
+                            <p class="mb-0">@Model.NotasAdmin</p>
+                        </div>
+                    }
+                </div>
+                <div class="card-footer bg-white">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Última atualização: @(Model.DataResolucao?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")
+                    </small>
+                </div>
+            </div>
+
+            <!-- Related Reports -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-link me-2"></i>Denúncias Relacionadas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action border-0">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">#1234</h6>
+                                <small class="text-muted">Há 2 dias</small>
+                            </div>
+                            <p class="mb-1 small">Comportamento inadequado</p>
+                            <small class="text-muted">Mesmo denunciante</small>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action border-0">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">#1189</h6>
+                                <small class="text-muted">Há 1 semana</small>
+                            </div>
+                            <p class="mb-1 small">Fraude</p>
+                            <small class="text-muted">Mesmo denunciado</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function markAsUnderReview(reportId) {
+            if (confirm('Marcar esta denúncia como "Em Análise"?')) {
+                updateStatus(reportId, 1);
+            }
+        }
+
+        function markAsResolved(reportId) {
+            if (confirm('Marcar esta denúncia como "Resolvida"?')) {
+                updateStatus(reportId, 2);
+            }
+        }
+
+        function markAsRejected(reportId) {
+            if (confirm('Marcar esta denúncia como "Rejeitada"?')) {
+                updateStatus(reportId, 3);
+            }
+        }
+
+        function updateStatus(reportId, status) {
+            const form = $('#statusForm');
+            form.find('select[name="status"]').val(status);
+            form.submit();
+        }
+    </script>
+}

@@ -1,0 +1,234 @@
+﻿@model EDSG.Models.MensagensViewModel
+@{
+    ViewData["Title"] = "Mensagens";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2><i class="bi bi-chat-dots me-2"></i> Mensagens</h2>
+            <p class="text-muted">Gerencie suas conversas e mensagens</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Lista de conversas -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Conversas</h5>
+                        <a asp-action="NovaConversa" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-circle"></i> Nova
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0 conversation-list">
+                    @if (Model.Conversas != null && Model.Conversas.Any()) {
+                        foreach (var conversa in Model.Conversas) {
+                            <a href="@Url.Action("Mensagens", "Dashboard", new { id = conversa.OutroUsuarioId })"
+                               class="d-block conversation-item @(Model.ConversaAtualId == conversa.OutroUsuarioId ? "active" : "")">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        @if (!string.IsNullOrEmpty(conversa.OutroUsuario.FotoPerfil)) {
+                                            <img src="@conversa.OutroUsuario.FotoPerfil"
+                                                 class="rounded-circle"
+                                                 style="width: 40px; height: 40px; object-fit: cover;"
+                                                 alt="@conversa.OutroUsuario.Nome">
+                                        } else {
+                                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center"
+                                                 style="width: 40px; height: 40px; color: white;">
+                                                <i class="bi bi-person"></i>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0">@conversa.OutroUsuario.Nome</h6>
+                                            @if (conversa.MensagensNaoLidas > 0) {
+                                                <span class="unread-count-badge">@conversa.MensagensNaoLidas</span>
+                                            }
+                                        </div>
+                                        <p class="text-muted small mb-0 text-truncate" style="max-width: 150px;">
+                                            @conversa.UltimaMensagem.Texto
+                                        </p>
+                                        <small class="text-muted">
+                                            @conversa.UltimaMensagem.DataEnvio.ToLocalTime().ToString("dd/MM HH:mm")
+                                        </small>
+                                    </div>
+                                </div>
+                            </a>
+                        }
+                    } else {
+                        <div class="text-center py-5">
+                            <div class="mb-3">
+                                <i class="bi bi-chat-text display-1 text-muted"></i>
+                            </div>
+                            <h5>Nenhuma conversa</h5>
+                            <p class="text-muted">Você ainda não tem conversas</p>
+                            <a asp-action="NovaConversa" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Iniciar Conversa
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Área de mensagens -->
+        <div class="col-md-8">
+            @if (!string.IsNullOrEmpty(Model.ConversaAtualId)) {
+                var conversaAtual = Model.Conversas?.FirstOrDefault(c => c.OutroUsuarioId == Model.ConversaAtualId);
+
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                @if (conversaAtual != null) {
+                                    @if (!string.IsNullOrEmpty(conversaAtual.OutroUsuario.FotoPerfil)) {
+                                        <img src="@conversaAtual.OutroUsuario.FotoPerfil"
+                                             class="rounded-circle me-2"
+                                             style="width: 32px; height: 32px; object-fit: cover;"
+                                             alt="@conversaAtual.OutroUsuario.Nome">
+                                    }
+                                    <div>
+                                        <h5 class="mb-0">@conversaAtual.OutroUsuario.Nome</h5>
+                                        @if (!string.IsNullOrEmpty(conversaAtual.OutroUsuario.Categoria)) {
+                                            <small class="text-muted">@conversaAtual.OutroUsuario.Categoria</small>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                            <div>
+                                <form asp-action="ApagarConversa" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="destinatarioId" value="@Model.ConversaAtualId" />
+                                    <button type="submit" class="btn btn-outline-danger btn-sm"
+                                            onclick="return confirm('Tem certeza que deseja apagar esta conversa?')">
+                                        <i class="bi bi-trash"></i> Apagar Conversa
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de mensagens -->
+                    <div class="card-body message-container" id="mensagensContainer">
+                        @if (Model.MensagensConversa != null && Model.MensagensConversa.Any()) {
+                            foreach (var mensagem in Model.MensagensConversa) {
+                                var isRemetente = mensagem.RemetenteId == Model.UsuarioId;
+                                <div class="d-flex mb-3 @(isRemetente ? "justify-content-end" : "justify-content-start")">
+                                    <div class="message-bubble @(isRemetente ? "message-sent" : "message-received")">
+                                        <div>@mensagem.Texto</div>
+                                        <div class="message-time">
+                                            @mensagem.DataEnvio.ToLocalTime().ToString("dd/MM HH:mm")
+                                            @if (mensagem.IsLida && isRemetente) {
+                                                <i class="bi bi-check-all ms-1"></i>
+                                            } else if (isRemetente) {
+                                                <i class="bi bi-check ms-1"></i>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        } else {
+                            <div class="text-center py-5">
+                                <div class="mb-3">
+                                    <i class="bi bi-chat-left-text display-1 text-muted"></i>
+                                </div>
+                                <h5>Nenhuma mensagem</h5>
+                                <p class="text-muted">Envie a primeira mensagem para iniciar a conversa</p>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Formulário para enviar mensagem -->
+                    <div class="card-footer bg-white border-top">
+                        <form id="formEnviarMensagem" asp-action="EnviarMensagem" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="destinatarioId" value="@Model.ConversaAtualId" />
+                            <div class="input-group">
+                                <textarea name="texto" class="form-control message-input"
+                                      placeholder="Digite sua mensagem..."
+                                      rows="1"
+                                      maxlength="1000"
+                                      required></textarea>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-send"></i> Enviar
+                                </button>
+                            </div>
+                            <small class="text-muted mt-1">Pressione Enter para enviar</small>
+                        </form>
+                    </div>
+                </div>
+            } else {
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="bi bi-chat-left-text display-1 text-muted"></i>
+                            </div>
+                            <h3>Selecione uma conversa</h3>
+                            <p class="text-muted mb-4">Escolha uma conversa da lista para ver as mensagens</p>
+                            <a asp-action="NovaConversa" class="btn btn-primary btn-lg">
+                                <i class="bi bi-plus-circle me-2"></i> Iniciar Nova Conversa
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            scrollToBottom();
+
+            // Auto-focus no campo de mensagem
+            $('textarea[name="texto"]').focus();
+
+            // Auto-expand textarea
+            $('textarea[name="texto"]').on('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            // Enviar mensagem com Enter (Shift+Enter para nova linha)
+            $('textarea[name="texto"]').on('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    $('#formEnviarMensagem').submit();
+                }
+            });
+
+            // Atualizar mensagens a cada 5 segundos se estiver numa conversa
+            @if (!string.IsNullOrEmpty(Model.ConversaAtualId)) {
+                    <text>
+                    setInterval(function() {
+                        $.get('@Url.Action("GetMensagensConversa", "Dashboard", new { id = Model.ConversaAtualId })', function(data) {
+                            if (data) {
+                                $('#mensagensContainer').html(data);
+                                scrollToBottom();
+                                updateUnreadCount(); // Atualizar contador
+                            }
+                        });
+                    }, 5000); // 5 segundos
+                    </text>
+            }
+        });
+
+        function scrollToBottom() {
+            var container = $('#mensagensContainer');
+            container.scrollTop(container[0].scrollHeight);
+        }
+
+        // Recarregar quando enviar mensagem
+        $('#formEnviarMensagem').on('submit', function() {
+            setTimeout(function() {
+                scrollToBottom();
+            }, 100);
+        });
+    </script>
+}

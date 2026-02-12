@@ -1,0 +1,1479 @@
+﻿@model EDSG.Controllers.ProfileViewModel
+@{
+    ViewData["Title"] = "Meu Perfil";
+    var categoriasExistentes = ViewBag.CategoriasExistentes as List<string> ?? new List<string>();
+}
+
+<div class="container">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <!-- Profile Card -->
+            <div class="card shadow-sm mb-4 profile-sidebar-card">
+                <div class="card-body text-center">
+                    <div class="mb-3 position-relative">
+                        <div id="profilePhotoContainer" class="mx-auto rounded-circle overflow-hidden bg-gradient-primary text-white d-flex align-items-center justify-content-center"
+                             style="width: 120px; height: 120px; cursor: pointer;" 
+                             onclick="document.getElementById('FotoPerfil').click()">
+                            @if (!string.IsNullOrEmpty(Model.FotoPerfilUrl)) {
+                                <img id="profileImage" src="@Model.FotoPerfilUrl" alt="@Model.Nome"
+                                     class="img-fluid w-100 h-100 object-fit-cover" />
+                            } else {
+                                <span id="profileInitial" class="display-4 fw-bold">@Model.Nome.Substring(0, 1).ToUpper()</span>
+                            }
+                            <div class="profile-overlay d-flex align-items-center justify-content-center">
+                                <i class="bi bi-camera-fill text-white fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">Clique para alterar</small>
+                        </div>
+                    </div>
+                    <h4 class="card-title mb-1">@Model.Nome</h4>
+                    <p class="text-muted mb-3">@Model.Email</p>
+                    
+                    @if (!string.IsNullOrEmpty(Model.Categoria)) {
+                        <div class="mb-3">
+                            <span class="badge bg-primary-gradient px-3 py-2">
+                                <i class="bi bi-tag"></i> @Model.Categoria
+                            </span>
+                        </div>
+                    }
+
+                    <div class="d-grid gap-2 mt-3">
+                        <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-primary">
+                            <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                        </a>
+                        <a asp-controller="Account" asp-action="ChangePassword" class="btn btn-outline-secondary">
+                            <i class="bi bi-key me-2"></i> Alterar Password
+                        </a>
+                        <a asp-controller="Account" asp-action="ChangeEmail" class="btn btn-outline-warning">
+                            <i class="bi bi-envelope me-2"></i> Alterar Email
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Card -->
+            <div class="card shadow-sm stats-card">
+                <div class="card-header bg-gradient-light">
+                    <h6 class="mb-0"><i class="bi bi-graph-up"></i> Estatísticas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-3">
+                            <span class="d-flex align-items-center">
+                                <i class="bi bi-calendar-check text-primary me-2"></i>
+                                <span>Membro desde</span>
+                            </span>
+                            <span class="badge bg-primary">@DateTime.Now.AddMonths(-6).ToString("MMM yyyy")</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-3">
+                            <span class="d-flex align-items-center">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                <span>Serviços Realizados</span>
+                            </span>
+                            <span class="badge bg-success">12</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-3">
+                            <span class="d-flex align-items-center">
+                                <i class="bi bi-star text-warning me-2"></i>
+                                <span>Avaliação Média</span>
+                            </span>
+                            <span class="badge bg-warning">4.8</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-3">
+                            <span class="d-flex align-items-center">
+                                <i class="bi bi-circle-fill text-info me-2"></i>
+                                <span>Status</span>
+                            </span>
+                            <span class="badge bg-info">Ativo</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <!-- Tabs Navigation -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body p-0">
+                    <ul class="nav nav-pills nav-justified" id="profileTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="perfil-tab" data-bs-toggle="tab" data-bs-target="#perfil" type="button">
+                                <i class="bi bi-person-gear me-2"></i> Perfil
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="portfolio-tab" data-bs-toggle="tab" data-bs-target="#portfolio" type="button">
+                                <i class="bi bi-images me-2"></i> Portfólio
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="servicos-tab" data-bs-toggle="tab" data-bs-target="#servicos" type="button">
+                                <i class="bi bi-briefcase me-2"></i> Serviços
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tab-content" id="profileTabsContent">
+                <!-- Perfil Tab -->
+                <div class="tab-pane fade show active" id="perfil" role="tabpanel">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-header bg-gradient-primary text-white">
+                            <h4 class="mb-0"><i class="bi bi-person-gear me-2"></i> Editar Perfil</h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <form asp-controller="Account" asp-action="Profile" method="post" enctype="multipart/form-data" id="profileForm">
+                                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                                <!-- Alertas -->
+                                @if (TempData["SuccessMessage"] != null)
+                                {
+                                    <div class="alert alert-success alert-dismissible fade show">
+                                        <i class="bi bi-check-circle me-2"></i> @TempData["SuccessMessage"]
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                }
+                                @if (TempData["ErrorMessage"] != null)
+                                {
+                                    <div class="alert alert-danger alert-dismissible fade show">
+                                        <i class="bi bi-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                }
+
+                                <input type="hidden" asp-for="FotoPerfilUrl" />
+                                <input type="hidden" name="RemovePhoto" id="removePhotoHidden" value="false" />
+
+                                <!-- Personal Info Section -->
+                                <div class="section-card mb-4">
+                                    <div class="section-header">
+                                        <h5><i class="bi bi-person-circle me-2"></i> Informações Pessoais</h5>
+                                    </div>
+                                    <div class="section-body">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label asp-for="Nome" class="form-label fw-semibold">
+                                                    <i class="bi bi-person me-1"></i> Nome Completo
+                                                </label>
+                                                <input asp-for="Nome" class="form-control form-control-lg" placeholder="Seu nome completo" />
+                                                <span asp-validation-for="Nome" class="text-danger small"></span>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label asp-for="Email" class="form-label fw-semibold">
+                                                    <i class="bi bi-envelope me-1"></i> Email
+                                                </label>
+                                                <input asp-for="Email" class="form-control form-control-lg" readonly />
+                                                <div class="form-text">
+                                                    <i class="bi bi-info-circle me-1"></i> 
+                                                    Use o botão "Alterar Email" para modificar
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label asp-for="Localizacao" class="form-label fw-semibold">
+                                                <i class="bi bi-geo-alt me-1"></i> Localização
+                                            </label>
+                                            <input asp-for="Localizacao" class="form-control form-control-lg" placeholder="Ex: Lisboa, Portugal" />
+                                            <span asp-validation-for="Localizacao" class="text-danger small"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Photo Upload Section -->
+                                <div class="section-card mb-4">
+                                    <div class="section-header">
+                                        <h5><i class="bi bi-camera me-2"></i> Foto de Perfil</h5>
+                                    </div>
+                                    <div class="section-body">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-4 text-center mb-3 mb-md-0">
+                                                <div class="current-photo-container">
+                                                    @if (!string.IsNullOrEmpty(Model.FotoPerfilUrl)) {
+                                                        <img src="@Model.FotoPerfilUrl" alt="Foto atual" 
+                                                             class="img-fluid rounded-circle border border-3 border-primary" 
+                                                             style="width: 150px; height: 150px; object-fit: cover;">
+                                                    } else {
+                                                        <div class="rounded-circle bg-gradient-primary text-white d-flex align-items-center justify-content-center mx-auto"
+                                                             style="width: 150px; height: 150px; font-size: 3rem;">
+                                                            @Model.Nome.Substring(0, 1).ToUpper()
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <label asp-for="FotoPerfil" class="form-label fw-semibold">
+                                                    <i class="bi bi-upload me-1"></i> Nova Foto
+                                                </label>
+                                                <div class="input-group input-group-lg">
+                                                    <input asp-for="FotoPerfil" class="form-control" type="file" 
+                                                           id="FotoPerfil" accept=".jpg,.jpeg,.png,.gif"
+                                                           onchange="previewImage(this)" />
+                                                    <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('FotoPerfil').click()">
+                                                        <i class="bi bi-folder2-open"></i>
+                                                    </button>
+                                                </div>
+                                                <span asp-validation-for="FotoPerfil" class="text-danger small"></span>
+                                                <div class="form-text mt-2">
+                                                    <i class="bi bi-info-circle me-1"></i>
+                                                    Formatos: JPG, JPEG, PNG, GIF. Tamanho máximo: 5MB.
+                                                </div>
+                                                @if (!string.IsNullOrEmpty(Model.FotoPerfilUrl)) {
+                                                    <div class="mt-2">
+                                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removePhoto()">
+                                                            <i class="bi bi-trash me-1"></i> Remover foto atual
+                                                        </button>
+                                                    </div>
+                                                }
+                                                <div id="imagePreview" class="mt-3" style="display: none;">
+                                                    <div class="alert alert-info">
+                                                        <i class="bi bi-image me-2"></i>
+                                                        <strong>Pré-visualização:</strong>
+                                                    </div>
+                                                    <img id="preview" class="img-thumbnail" style="max-width: 200px; max-height: 200px;" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Professional Info Section -->
+                                <div class="section-card mb-4">
+                                    <div class="section-header">
+                                        <h5><i class="bi bi-briefcase me-2"></i> Informações Profissionais</h5>
+                                    </div>
+                                    <div class="section-body">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label asp-for="Categoria" class="form-label fw-semibold">
+                                                    <i class="bi bi-tag me-1"></i> Categoria Principal
+                                                </label>
+                                                <input asp-for="Categoria" class="form-control form-control-lg" 
+                                                       list="categoriasList" placeholder="Selecione ou digite uma categoria" 
+                                                       id="categoriaInput" />
+                                                <datalist id="categoriasList">
+                                                    @foreach (var categoria in categoriasExistentes)
+                                                    {
+                                                        <option value="@categoria"></option>
+                                                    }
+                                                    <option value="Tecnologia"></option>
+                                                    <option value="Design"></option>
+                                                    <option value="Marketing"></option>
+                                                    <option value="Consultoria"></option>
+                                                    <option value="Educação"></option>
+                                                    <option value="Saúde"></option>
+                                                    <option value="Construção"></option>
+                                                    <option value="Finanças"></option>
+                                                    <option value="Direito"></option>
+                                                    <option value="Engenharia"></option>
+                                                    <option value="Arquitetura"></option>
+                                                    <option value="Moda"></option>
+                                                    <option value="Gastronomia"></option>
+                                                    <option value="Fotografia"></option>
+                                                    <option value="Música"></option>
+                                                    <option value="Treino Pessoal"></option>
+                                                    <option value="Psicologia"></option>
+                                                    <option value="Coaching"></option>
+                                                    <option value="Tradução"></option>
+                                                    <option value="Outro"></option>
+                                                </datalist>
+                                                <span asp-validation-for="Categoria" class="text-danger small"></span>
+                                                <div class="form-text">
+                                                    <i class="bi bi-lightbulb me-1"></i>
+                                                    Selecione uma categoria existente ou crie uma nova
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label asp-for="Especialidade" class="form-label fw-semibold">
+                                                    <i class="bi bi-stars me-1"></i> Especialidade
+                                                </label>
+                                                <input asp-for="Especialidade" class="form-control form-control-lg" 
+                                                       placeholder="Ex: Desenvolvimento Web, Design Gráfico" />
+                                                <span asp-validation-for="Especialidade" class="text-danger small"></span>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label asp-for="PrecoBase" class="form-label fw-semibold">
+                                                    <i class="bi bi-currency-euro me-1"></i> Preço Base
+                                                </label>
+                                                <div class="input-group input-group-lg">
+                                                    <span class="input-group-text bg-light">€</span>
+                                                    <input asp-for="PrecoBase" class="form-control" placeholder="0.00" />
+                                                    <span class="input-group-text bg-light">/hora</span>
+                                                </div>
+                                                <span asp-validation-for="PrecoBase" class="text-danger small"></span>
+                                                <div class="form-text">
+                                                    <i class="bi bi-info-circle me-1"></i>
+                                                    Preço base por hora de serviço (opcional)
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Bio Section -->
+                                <div class="section-card mb-4">
+                                    <div class="section-header">
+                                        <h5><i class="bi bi-card-text me-2"></i> Biografia</h5>
+                                    </div>
+                                    <div class="section-body">
+                                        <label asp-for="Bio" class="form-label fw-semibold">
+                                            <i class="bi bi-pencil me-1"></i> Sobre Você
+                                        </label>
+                                        <textarea asp-for="Bio" class="form-control" rows="5" id="bioTextarea"
+                                                  placeholder="Conte-nos sobre sua experiência, habilidades, serviços que oferece e o que torna seu trabalho especial..."></textarea>
+                                        <span asp-validation-for="Bio" class="text-danger small"></span>
+                                        <div class="d-flex justify-content-between align-items-center mt-2">
+                                            <div class="form-text">
+                                                <i class="bi bi-info-circle me-1"></i>
+                                                Esta descrição aparecerá no seu perfil público
+                                            </div>
+                                            <div class="char-count">
+                                                <span id="charCount">0</span>/2000 caracteres
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Submit Section -->
+                                <div class="d-flex justify-content-between pt-4 mt-3 border-top">
+                                    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-lg btn-outline-secondary">
+                                        <i class="bi bi-x-circle me-2"></i> Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-lg btn-primary" id="submitBtn">
+                                        <i class="bi bi-check-circle me-2"></i> Guardar Alterações
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Portfólio Tab -->
+                <div class="tab-pane fade" id="portfolio" role="tabpanel">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-header bg-gradient-success text-white">
+                            <h4 class="mb-0"><i class="bi bi-images me-2"></i> Meu Portfólio</h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <!-- Upload Section -->
+                            <div class="upload-section mb-5">
+                                <div class="upload-card card border-dashed">
+                                    <div class="card-body text-center p-5">
+                                        <div class="mb-4">
+                                            <i class="bi bi-cloud-upload display-4 text-success mb-3"></i>
+                                            <h5>Adicione seus melhores trabalhos</h5>
+                                            <p class="text-muted">Mostre suas habilidades através de imagens dos projetos realizados</p>
+                                        </div>
+                                        
+                                        <form id="uploadPortfolioForm" enctype="multipart/form-data" class="mb-4">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <div class="form-floating">
+                                                        <input type="text" class="form-control" id="portfolioTitle" 
+                                                               name="portfolioTitle" placeholder="Título do projeto" required>
+                                                        <label for="portfolioTitle">
+                                                            <i class="bi bi-card-heading me-1"></i> Título do Projeto *
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-floating">
+                                                        <input type="date" class="form-control" id="portfolioDate" name="portfolioDate">
+                                                        <label for="portfolioDate">
+                                                            <i class="bi bi-calendar me-1"></i> Data do Projeto
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="form-floating">
+                                                        <textarea class="form-control" id="portfolioDescription" 
+                                                                  name="portfolioDescription" placeholder="Descrição" 
+                                                                  style="height: 100px"></textarea>
+                                                        <label for="portfolioDescription">
+                                                            <i class="bi bi-text-paragraph me-1"></i> Descrição do Projeto
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="file-upload-area">
+                                                        <label for="portfolioFile" class="file-upload-label">
+                                                            <div class="file-upload-content">
+                                                                <i class="bi bi-image fs-1 text-muted mb-3"></i>
+                                                                <h6>Clique para selecionar uma imagem</h6>
+                                                                <p class="text-muted small">Formatos: JPG, PNG, GIF • Máx: 10MB</p>
+                                                            </div>
+                                                            <input type="file" class="form-control d-none" 
+                                                                   id="portfolioFile" name="portfolioFile" 
+                                                                   accept=".jpg,.jpeg,.png,.gif" required
+                                                                   onchange="previewPortfolioImage(this)">
+                                                        </label>
+                                                        <div id="portfolioImagePreview" class="mt-3 text-center" style="display: none;">
+                                                            <div class="preview-container">
+                                                                <img id="portfolioPreview" class="img-thumbnail preview-image">
+                                                                <button type="button" class="btn btn-sm btn-danger remove-preview" 
+                                                                        onclick="removePortfolioPreview()">
+                                                                    <i class="bi bi-x"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox" 
+                                                               id="isFeatured" name="isFeatured" value="true">
+                                                        <label class="form-check-label" for="isFeatured">
+                                                            <i class="bi bi-star-fill text-warning me-1"></i>
+                                                            Destacar este trabalho
+                                                        </label>
+                                                        <div class="form-text">
+                                                            Trabalhos destacados aparecem primeiro no seu perfil
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mt-4">
+                                                <button type="submit" class="btn btn-success btn-lg px-5">
+                                                    <i class="bi bi-upload me-2"></i> Carregar para Portfólio
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Portfolio Gallery -->
+                            <div class="portfolio-gallery">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-collection me-2"></i> Meus Trabalhos
+                                        <span class="badge bg-success ms-2" id="portfolioCount">0</span>
+                                    </h5>
+                                    <div class="sort-controls">
+                                        <select class="form-select form-select-sm" id="sortPortfolio" onchange="sortPortfolio()">
+                                            <option value="featured">Destacados primeiro</option>
+                                            <option value="recent">Mais recentes</option>
+                                            <option value="oldest">Mais antigos</option>
+                                            <option value="title">Título (A-Z)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div id="portfolioItems" class="row g-4">
+                                    <!-- Dynamic content will be loaded here -->
+                                </div>
+                                
+                                <div id="emptyPortfolio" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <i class="bi bi-images display-1 text-muted mb-3"></i>
+                                        <h5 class="text-muted mb-2">Seu portfólio está vazio</h5>
+                                        <p class="text-muted">Adicione seus melhores trabalhos para impressionar seus clientes!</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Serviços Tab -->
+                <div class="tab-pane fade" id="servicos" role="tabpanel">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-header bg-gradient-warning text-white">
+                            <h4 class="mb-0"><i class="bi bi-briefcase me-2"></i> Meus Serviços</h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Dica:</strong> Adicione os serviços que você oferece para que os clientes possam solicitá-los diretamente.
+                            </div>
+                            
+                            <div id="servicesContent">
+                                <!-- Services will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Cards -->
+            <div class="row mt-4">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 border-0 shadow-sm hover-card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="bi bi-shield-check text-primary me-2"></i> Segurança</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text text-muted mb-4">Proteja sua conta com senha forte e mantenha seu email atualizado.</p>
+                            <div class="d-grid gap-2">
+                                <a asp-controller="Account" asp-action="ChangePassword" 
+                                   class="btn btn-outline-primary">
+                                    <i class="bi bi-key me-2"></i> Alterar Palavra-passe
+                                </a>
+                                <a asp-controller="Account" asp-action="ChangeEmail" 
+                                   class="btn btn-outline-warning">
+                                    <i class="bi bi-envelope me-2"></i> Alterar Email
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 border-0 shadow-sm hover-card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="bi bi-trash3 text-danger me-2"></i> Conta</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text text-muted mb-4">
+                                Elimine permanentemente sua conta e todos os dados associados.
+                                <span class="d-block mt-2 small text-danger">
+                                    <i class="bi bi-exclamation-triangle"></i> Esta ação é irreversível!
+                                </span>
+                            </p>
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-outline-danger" 
+                                        data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                                    <i class="bi bi-trash me-2"></i> Eliminar Conta
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal - View Portfolio Item -->
+<div class="modal fade" id="viewPortfolioModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="portfolioModalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <img id="portfolioModalImage" class="img-fluid rounded modal-image" alt="">
+                </div>
+                <div class="portfolio-modal-info">
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <h6>Descrição</h6>
+                            <p id="portfolioModalDescription" class="text-muted"></p>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-card">
+                                <div class="info-item mb-3">
+                                    <i class="bi bi-calendar text-primary me-2"></i>
+                                    <span class="fw-semibold">Data:</span>
+                                    <span id="portfolioModalDate" class="ms-2"></span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="bi bi-star text-warning me-2"></i>
+                                    <span class="fw-semibold">Status:</span>
+                                    <span id="portfolioModalFeatured" class="ms-2 badge"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-outline-primary" id="editPortfolioBtn">
+                    <i class="bi bi-pencil me-1"></i> Editar
+                </button>
+                <button type="button" class="btn btn-danger" id="deletePortfolioBtn">
+                    <i class="bi bi-trash me-1"></i> Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal - Delete Account -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i> Confirmar Eliminação</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger border-0">
+                    <div class="d-flex">
+                        <i class="bi bi-exclamation-octagon-fill fs-4 me-3"></i>
+                        <div>
+                            <h6 class="alert-heading">Atenção!</h6>
+                            <p class="mb-0">Esta ação é permanente e não pode ser desfeita.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="mb-3">Ao eliminar sua conta, você perderá permanentemente:</p>
+                <ul class="list-group list-group-flush mb-4">
+                    <li class="list-group-item d-flex align-items-center">
+                        <i class="bi bi-x-circle text-danger me-2"></i>
+                        Todos os seus dados pessoais
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <i class="bi bi-x-circle text-danger me-2"></i>
+                        Histórico de serviços
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <i class="bi bi-x-circle text-danger me-2"></i>
+                        Avaliações recebidas
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <i class="bi bi-x-circle text-danger me-2"></i>
+                        Mensagens e conversas
+                    </li>
+                </ul>
+                
+                <div class="mb-4">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="confirmDelete">
+                        <label class="form-check-label" for="confirmDelete">
+                            Compreendo que esta ação é permanente e não pode ser desfeita.
+                        </label>
+                    </div>
+                    <div class="mb-3">
+                        <label for="deletePassword" class="form-label">Digite sua palavra-passe para confirmar:</label>
+                        <input type="password" class="form-control" id="deletePassword" placeholder="Sua palavra-passe">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteButton" disabled>
+                    <i class="bi bi-trash me-1"></i> Eliminar Conta
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        // Portfolio Data
+        let portfolioData = [];
+        let currentPortfolioItemId = null;
+
+        // Load portfolio on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPortfolio();
+            loadServices();
+            initProfileForm();
+        });
+
+        // Portfolio Functions
+        async function loadPortfolio() {
+            try {
+                // Simulate API call - replace with real API
+                portfolioData = [
+                    {
+                        id: 1,
+                        title: "Design de Logo Moderno",
+                        description: "Logo criado para startup de tecnologia com foco em inovação e design minimalista. O projeto inclui identidade visual completa.",
+                        imageUrl: "https://images.unsplash.com/photo-1634942537034-2531766767d1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                        date: "2024-01-15",
+                        isFeatured: true,
+                        createdAt: "2024-01-15T10:30:00"
+                    },
+                    {
+                        id: 2,
+                        title: "Website Corporativo",
+                        description: "Desenvolvimento completo de website responsivo para empresa de consultoria. Inclui sistema de gestão de conteúdo personalizado.",
+                        imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                        date: "2024-02-01",
+                        isFeatured: false,
+                        createdAt: "2024-02-01T14:20:00"
+                    },
+                    {
+                        id: 3,
+                        title: "App Mobile Financeiro",
+                        description: "Aplicativo móvel para gestão financeira pessoal com dashboard interativo e relatórios detalhados.",
+                        imageUrl: "https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                        date: "2024-01-20",
+                        isFeatured: true,
+                        createdAt: "2024-01-20T09:15:00"
+                    }
+                ];
+                
+                displayPortfolio();
+            } catch (error) {
+                console.error('Erro ao carregar portfólio:', error);
+                showToast('Erro ao carregar portfólio', 'danger');
+            }
+        }
+
+        function displayPortfolio() {
+            const portfolioItems = document.getElementById('portfolioItems');
+            const portfolioCount = document.getElementById('portfolioCount');
+            const emptyPortfolio = document.getElementById('emptyPortfolio');
+            
+            if (!portfolioData || portfolioData.length === 0) {
+                portfolioItems.innerHTML = '';
+                portfolioCount.textContent = '0';
+                emptyPortfolio.style.display = 'block';
+                return;
+            }
+            
+            emptyPortfolio.style.display = 'none';
+            portfolioCount.textContent = portfolioData.length;
+            
+            // Sort based on current selection
+            const sortBy = document.getElementById('sortPortfolio')?.value || 'featured';
+            let sortedData = [...portfolioData];
+            
+            switch(sortBy) {
+                case 'featured':
+                    sortedData.sort((a, b) => {
+                        if (a.isFeatured && !b.isFeatured) return -1;
+                        if (!a.isFeatured && b.isFeatured) return 1;
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    });
+                    break;
+                case 'recent':
+                    sortedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    break;
+                case 'oldest':
+                    sortedData.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                    break;
+                case 'title':
+                    sortedData.sort((a, b) => a.title.localeCompare(b.title));
+                    break;
+            }
+            
+            let portfolioHTML = '';
+            
+            sortedData.forEach(item => {
+                const date = item.date ? new Date(item.date).toLocaleDateString('pt-PT', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                }) : 'Sem data';
+                
+                portfolioHTML += `
+                    <div class="col-md-6 col-lg-4" data-portfolio-id="${item.id}">
+                        <div class="portfolio-item-card card h-100">
+                            <div class="portfolio-item-image position-relative">
+                                <img src="${item.imageUrl}" 
+                                     class="img-fluid w-100" 
+                                     alt="${item.title}"
+                                     style="height: 200px; object-fit: cover;"
+                                     onclick="viewPortfolioItem(${item.id})">
+                                ${item.isFeatured ? `
+                                    <div class="featured-badge">
+                                        <i class="bi bi-star-fill"></i> Destacado
+                                    </div>
+                                ` : ''}
+                                <div class="portfolio-item-overlay" onclick="viewPortfolioItem(${item.id})">
+                                    <button class="btn btn-light btn-sm">
+                                        <i class="bi bi-zoom-in me-1"></i> Ver
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="card-title mb-2">${item.title}</h6>
+                                <p class="card-text small text-muted mb-3 line-clamp-2">${item.description}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar me-1"></i> ${date}
+                                    </small>
+                                    <div class="portfolio-item-actions">
+                                        <button class="btn btn-sm btn-outline-primary me-1" 
+                                                onclick="editPortfolioItem(${item.id})" 
+                                                title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                onclick="deletePortfolioItem(${item.id})" 
+                                                title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            portfolioItems.innerHTML = portfolioHTML;
+        }
+
+        function sortPortfolio() {
+            displayPortfolio();
+        }
+
+        // Portfolio Preview
+        function previewPortfolioImage(input) {
+            const preview = document.getElementById('portfolioPreview');
+            const previewContainer = document.getElementById('portfolioImagePreview');
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                
+                // Validate file size (10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    showToast('A imagem é muito grande. Máximo: 10MB', 'danger');
+                    input.value = '';
+                    return;
+                }
+                
+                // Validate format
+                const validFormats = ['jpg', 'jpeg', 'png', 'gif'];
+                const extension = file.name.split('.').pop().toLowerCase();
+                if (!validFormats.includes(extension)) {
+                    showToast('Formato não suportado. Use JPG, PNG ou GIF', 'danger');
+                    input.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    previewContainer.style.display = 'block';
+                }
+                
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removePortfolioPreview() {
+            document.getElementById('portfolioFile').value = '';
+            document.getElementById('portfolioImagePreview').style.display = 'none';
+        }
+
+        // Portfolio Form Submission
+        document.getElementById('uploadPortfolioForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const formData = new FormData(form);
+            const fileInput = document.getElementById('portfolioFile');
+            
+            if (!fileInput.files[0]) {
+                showToast('Selecione uma imagem para o portfólio', 'warning');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> A carregar...';
+            
+            try {
+                // Simulate API call - replace with real API
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                const newItem = {
+                    id: portfolioData.length > 0 ? Math.max(...portfolioData.map(i => i.id)) + 1 : 1,
+                    title: formData.get('portfolioTitle'),
+                    description: formData.get('portfolioDescription'),
+                    imageUrl: URL.createObjectURL(fileInput.files[0]),
+                    date: formData.get('portfolioDate'),
+                    isFeatured: document.getElementById('isFeatured').checked,
+                    createdAt: new Date().toISOString()
+                };
+                
+                portfolioData.push(newItem);
+                displayPortfolio();
+                
+                // Reset form
+                form.reset();
+                removePortfolioPreview();
+                
+                // Show success message
+                showToast('Item adicionado ao portfólio com sucesso!', 'success');
+                
+                // Scroll to portfolio gallery
+                document.getElementById('portfolioItems').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+                
+            } catch (error) {
+                console.error('Erro ao carregar imagem:', error);
+                showToast('Erro ao carregar imagem. Tente novamente.', 'danger');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+
+        // View Portfolio Item
+        function viewPortfolioItem(itemId) {
+            const item = portfolioData.find(i => i.id === itemId);
+            if (!item) return;
+            
+            currentPortfolioItemId = itemId;
+            
+            document.getElementById('portfolioModalTitle').textContent = item.title;
+            document.getElementById('portfolioModalImage').src = item.imageUrl;
+            document.getElementById('portfolioModalImage').alt = item.title;
+            document.getElementById('portfolioModalDescription').textContent = 
+                item.description || 'Sem descrição disponível.';
+            
+            document.getElementById('portfolioModalDate').textContent = 
+                item.date ? new Date(item.date).toLocaleDateString('pt-PT', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric'
+                }) : 'Data não especificada';
+            
+            const featuredBadge = document.getElementById('portfolioModalFeatured');
+            if (item.isFeatured) {
+                featuredBadge.textContent = 'Destacado';
+                featuredBadge.className = 'badge bg-warning';
+            } else {
+                featuredBadge.textContent = 'Normal';
+                featuredBadge.className = 'badge bg-secondary';
+            }
+            
+            // Setup buttons
+            document.getElementById('editPortfolioBtn').onclick = function() {
+                editPortfolioItem(itemId);
+                bootstrap.Modal.getInstance(document.getElementById('viewPortfolioModal')).hide();
+            };
+            
+            document.getElementById('deletePortfolioBtn').onclick = function() {
+                if (confirm('Tem certeza que deseja eliminar este item do portfólio?')) {
+                    deletePortfolioItem(itemId);
+                    bootstrap.Modal.getInstance(document.getElementById('viewPortfolioModal')).hide();
+                }
+            };
+            
+            const modal = new bootstrap.Modal(document.getElementById('viewPortfolioModal'));
+            modal.show();
+        }
+
+        function editPortfolioItem(itemId) {
+            const item = portfolioData.find(i => i.id === itemId);
+            if (!item) return;
+            
+            // Fill form with item data
+            document.getElementById('portfolioTitle').value = item.title;
+            document.getElementById('portfolioDescription').value = item.description || '';
+            document.getElementById('portfolioDate').value = item.date || '';
+            document.getElementById('isFeatured').checked = item.isFeatured;
+            
+            // Show edit mode
+            const form = document.getElementById('uploadPortfolioForm');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<i class="bi bi-save me-2"></i> Atualizar Item';
+            submitBtn.className = 'btn btn-primary btn-lg px-5';
+            
+            // Store item ID for update
+            form.dataset.editId = itemId;
+            
+            // Scroll to form
+            form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            showToast('Modo edição ativado. Atualize os dados e clique em "Atualizar Item".', 'info');
+        }
+
+        function deletePortfolioItem(itemId) {
+            if (!confirm('Tem certeza que deseja eliminar permanentemente este item do portfólio?')) {
+                return;
+            }
+            
+            portfolioData = portfolioData.filter(item => item.id !== itemId);
+            displayPortfolio();
+            showToast('Item removido do portfólio com sucesso.', 'success');
+        }
+
+        // Profile Form Functions
+        function initProfileForm() {
+            // Bio character counter
+            const bioTextarea = document.getElementById('bioTextarea');
+            const charCount = document.getElementById('charCount');
+            
+            if (bioTextarea && charCount) {
+                function updateCharCount() {
+                    const length = bioTextarea.value.length;
+                    charCount.textContent = length;
+                    
+                    if (length > 2000) {
+                        charCount.classList.add('text-danger');
+                        charCount.classList.remove('text-warning');
+                    } else if (length > 1800) {
+                        charCount.classList.remove('text-danger');
+                        charCount.classList.add('text-warning');
+                    } else {
+                        charCount.classList.remove('text-danger', 'text-warning');
+                    }
+                }
+                
+                bioTextarea.addEventListener('input', updateCharCount);
+                updateCharCount();
+            }
+            
+            // Photo hover effect
+            const profileContainer = document.getElementById('profilePhotoContainer');
+            if (profileContainer) {
+                profileContainer.addEventListener('mouseenter', () => {
+                    profileContainer.querySelector('.profile-overlay').style.opacity = '1';
+                });
+                
+                profileContainer.addEventListener('mouseleave', () => {
+                    profileContainer.querySelector('.profile-overlay').style.opacity = '0';
+                });
+            }
+        }
+
+        function previewImage(input) {
+            const preview = document.getElementById('preview');
+            const imagePreview = document.getElementById('imagePreview');
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('A imagem é muito grande. Máximo: 5MB', 'danger');
+                    input.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.style.display = 'none';
+            }
+        }
+
+        function removePhoto() {
+            if (confirm('Tem certeza que deseja remover sua foto de perfil?')) {
+                document.getElementById('removePhotoHidden').value = 'true';
+                document.getElementById('FotoPerfil').value = '';
+                document.getElementById('imagePreview').style.display = 'none';
+                
+                setTimeout(() => {
+                    document.getElementById('profileForm').submit();
+                }, 100);
+            }
+        }
+
+        // Services Functions
+        async function loadServices() {
+            // This would load services from API
+            // For now, just show placeholder
+            document.getElementById('servicesContent').innerHTML = `
+                <div class="text-center py-5">
+                    <i class="bi bi-briefcase display-4 text-muted mb-3"></i>
+                    <h5 class="text-muted mb-2">Em breve...</h5>
+                    <p class="text-muted">A gestão de serviços estará disponível em breve!</p>
+                </div>
+            `;
+        }
+
+        // Utility Functions
+        function showToast(message, type = 'info') {
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-bg-${type} border-0`;
+            toast.setAttribute('role', 'alert');
+            
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi ${type === 'success' ? 'bi-check-circle' : type === 'danger' ? 'bi-exclamation-circle' : 'bi-info-circle'} me-2"></i>
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            // Add to container
+            const container = document.getElementById('toastContainer') || createToastContainer();
+            container.appendChild(toast);
+            
+            // Show toast
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            // Remove after hidden
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
+        }
+        
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.id = 'toastContainer';
+            container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            container.style.zIndex = '1060';
+            document.body.appendChild(container);
+            return container;
+        }
+
+        // Delete Account Functions
+        const confirmDeleteCheckbox = document.getElementById('confirmDelete');
+        const deletePasswordInput = document.getElementById('deletePassword');
+        const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+        
+        if (confirmDeleteCheckbox && deletePasswordInput && confirmDeleteButton) {
+            function updateDeleteButtonState() {
+                const isChecked = confirmDeleteCheckbox.checked;
+                const hasPassword = deletePasswordInput.value.length > 0;
+                confirmDeleteButton.disabled = !isChecked || !hasPassword;
+            }
+            
+            confirmDeleteCheckbox.addEventListener('change', updateDeleteButtonState);
+            deletePasswordInput.addEventListener('input', updateDeleteButtonState);
+            
+            confirmDeleteButton.addEventListener('click', async function() {
+                const password = deletePasswordInput.value;
+                
+                if (!password) {
+                    showToast('Digite sua palavra-passe', 'warning');
+                    return;
+                }
+                
+                if (confirm('Tem CERTEZA ABSOLUTA que deseja eliminar permanentemente sua conta?\n\nEsta ação NÃO pode ser desfeita!')) {
+                    try {
+                        // Simulate API call
+                        this.disabled = true;
+                        this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> A eliminar...';
+                        
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        
+                        showToast('Conta eliminada com sucesso', 'success');
+                        
+                        // Redirect after delay
+                        setTimeout(() => {
+                            window.location.href = '@Url.Action("Index", "Home")';
+                        }, 1500);
+                        
+                    } catch (error) {
+                        console.error('Erro ao eliminar conta:', error);
+                        showToast('Erro ao eliminar conta. Tente novamente.', 'danger');
+                        this.disabled = false;
+                        this.innerHTML = '<i class="bi bi-trash me-1"></i> Eliminar Conta';
+                    }
+                }
+            });
+        }
+    </script>
+
+    <style>
+        /* Modern Gradient Backgrounds */
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        }
+        
+        .bg-gradient-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+        }
+        
+        .bg-gradient-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+        }
+        
+        .bg-gradient-light {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
+        }
+        
+        .bg-primary-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            border: none;
+        }
+        
+        /* Profile Sidebar Card */
+        .profile-sidebar-card {
+            border: none;
+            overflow: hidden;
+        }
+        
+        .profile-sidebar-card .profile-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 50%;
+        }
+        
+        /* Stats Card */
+        .stats-card {
+            border: none;
+        }
+        
+        .stats-card .list-group-item {
+            transition: all 0.2s ease;
+        }
+        
+        .stats-card .list-group-item:hover {
+            background-color: rgba(0,0,0,0.02);
+            transform: translateX(5px);
+        }
+        
+        /* Section Cards */
+        .section-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #eef2f7;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #eef2f7;
+        }
+        
+        .section-header h5 {
+            margin: 0;
+            color: #2d3748;
+            font-weight: 600;
+        }
+        
+        .section-body {
+            padding: 1.5rem;
+        }
+        
+        /* Form Controls */
+        .form-control-lg {
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .form-control-lg:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-floating > .form-control:focus ~ label,
+        .form-floating > .form-control:not(:placeholder-shown) ~ label {
+            color: #667eea;
+        }
+        
+        /* File Upload Area */
+        .file-upload-area {
+            border: 2px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 2rem;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .file-upload-area:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .file-upload-label {
+            display: block;
+            cursor: pointer;
+        }
+        
+        .file-upload-content {
+            text-align: center;
+        }
+        
+        /* Portfolio Item Cards */
+        .portfolio-item-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .portfolio-item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+        
+        .portfolio-item-image {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .portfolio-item-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .portfolio-item-card:hover .portfolio-item-overlay {
+            opacity: 1;
+        }
+        
+        .featured-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        /* Preview Container */
+        .preview-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .preview-image {
+            max-width: 300px;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        .remove-preview {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Modal Styles */
+        .modal-image {
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .info-card {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Character Counter */
+        .char-count {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        /* Line Clamp */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            padding: 3rem 1rem;
+        }
+        
+        /* Hover Cards */
+        .hover-card {
+            transition: all 0.3s ease;
+        }
+        
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        /* Responsive Adjustments */
+        @@media (max-width: 768px) {
+            .section-body {
+                padding: 1rem;
+            }
+            
+            .portfolio-item-card {
+                margin-bottom: 1rem;
+            }
+            
+            .file-upload-area {
+                padding: 1.5rem;
+            }
+            
+            .modal-image {
+                max-height: 300px;
+            }
+        }
+        
+        @@media (max-width: 576px) {
+            .d-flex.justify-content-between.pt-4 {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .d-flex.justify-content-between.pt-4 .btn {
+                width: 100%;
+            }
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+    </style>
+}

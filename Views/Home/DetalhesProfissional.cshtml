@@ -1,0 +1,2369 @@
+﻿@model EDSG.Controllers.DetalhesProfissionalViewModel
+@using System
+
+@{
+    ViewData["Title"] = Model?.Profissional?.Nome ?? "Perfil Profissional";
+    var profissional = Model.Profissional;
+    var avaliacaoMedia = Model.AvaliacaoMedia;
+    var totalAvaliacoes = Model.TotalAvaliacoes;
+    var servicosConcluidos = Model.ServicosConcluidos;
+    var isOnline = DateTime.Now.Hour >= 9 && DateTime.Now.Hour <= 18;
+}
+
+<!-- Modal do Portfólio Completo -->
+<div class="modal fade" id="portfolioModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <div class="d-flex align-items-center w-100">
+                    <div class="flex-grow-1">
+                        <h5 class="modal-title mb-0">
+                            <i class="bi bi-images me-2"></i>
+                            Portfólio de @profissional.Nome
+                            <span class="badge bg-primary ms-2" id="portfolioCountBadge">@profissional.PortfolioItems?.Count</span>
+                        </h5>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <select class="form-select form-select-sm" id="portfolioFilter">
+                                <option value="all">Todos</option>
+                                <option value="featured">Destacados</option>
+                                <option value="recent">Mais Recentes</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body p-0">
+                @if (profissional.PortfolioItems?.Any() == true) {
+                    <div class="portfolio-fullscreen">
+                        <!-- Carousel Principal -->
+                        <div id="portfolioCarousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner" id="portfolioCarouselInner">
+                                @foreach (var item in profissional.PortfolioItems.OrderByDescending(p => p.IsFeatured).ThenByDescending(p => p.DataProjeto))
+                                {
+                                    <div class="carousel-item @(item == profissional.PortfolioItems.First() ? "active" : "")">
+                                        <div class="portfolio-modal-content">
+                                            <div class="portfolio-image-container">
+                                                @if (!string.IsNullOrEmpty(item.ImagemUrl)) {
+                                                    <img src="@item.ImagemUrl" 
+                                                         class="img-fluid" 
+                                                         alt="@item.Titulo"
+                                                         loading="lazy"
+                                                         id="carouselImage">
+                                                } else {
+                                                    <div class="empty-image-placeholder">
+                                                        <i class="bi bi-image text-muted display-1"></i>
+                                                        <p class="text-muted mt-3">Imagem não disponível</p>
+                                                    </div>
+                                                }
+                                                @if (item.IsFeatured) {
+                                                    <div class="featured-badge-large">
+                                                        <i class="bi bi-star-fill"></i> Trabalho Destacado
+                                                    </div>
+                                                }
+                                            </div>
+                                            <div class="portfolio-details">
+                                                <div class="portfolio-details-content">
+                                                    <h3 class="portfolio-title-large">@item.Titulo</h3>
+                                                    @if (!string.IsNullOrEmpty(item.Descricao)) {
+                                                        <div class="portfolio-description-large">
+                                                            <p>@item.Descricao</p>
+                                                        </div>
+                                                    }
+                                                    <div class="portfolio-meta-large">
+                                                        <div class="meta-item">
+                                                            <i class="bi bi-calendar text-primary"></i>
+                                                            <div>
+                                                                <span class="meta-label">Data do Projeto</span>
+                                                                <span class="meta-value">@(item.DataProjeto?.ToString("dd/MM/yyyy") ?? "Não especificada")</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="meta-item">
+                                                            <i class="bi bi-clock text-info"></i>
+                                                            <div>
+                                                                <span class="meta-label">Adicionado em</span>
+                                                                <span class="meta-value">@item.DataCriacao.ToString("dd/MM/yyyy")</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#portfolioCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon"></span>
+                                <span class="visually-hidden">Anterior</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#portfolioCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon"></span>
+                                <span class="visually-hidden">Próximo</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Miniaturas -->
+                        <div class="portfolio-thumbnails">
+                            <div class="thumbnails-container" id="thumbnailsContainer">
+                                @foreach (var item in profissional.PortfolioItems.OrderByDescending(p => p.IsFeatured).ThenByDescending(p => p.DataProjeto))
+                                {
+                                    <div class="thumbnail-item" 
+                                         data-item-id="@item.Id"
+                                         data-featured="@item.IsFeatured"
+                                         data-date="@item.DataProjeto?.ToString("yyyy-MM-dd")">
+                                        <div class="thumbnail-inner" onclick="goToSlide(@profissional.PortfolioItems.ToList().IndexOf(item))">
+                                            @if (!string.IsNullOrEmpty(item.ImagemUrl)) {
+                                                <img src="@item.ImagemUrl" 
+                                                     class="img-fluid" 
+                                                     alt="@item.Titulo"
+                                                     loading="lazy">
+                                            } else {
+                                                <div class="thumbnail-placeholder">
+                                                    <i class="bi bi-image"></i>
+                                                </div>
+                                            }
+                                            @if (item.IsFeatured) {
+                                                <div class="thumbnail-featured">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </div>
+                                            }
+                                            <div class="thumbnail-overlay">
+                                                <h6>@item.Titulo</h6>
+                                                <small>@item.DataProjeto?.ToString("MMM yyyy")</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                } else {
+                    <div class="empty-portfolio-fullscreen">
+                        <div class="empty-state-large">
+                            <i class="bi bi-images display-1 text-muted mb-4"></i>
+                            <h3 class="text-muted mb-3">Portfólio Vazio</h3>
+                            <p class="text-muted mb-4">Este profissional ainda não adicionou trabalhos ao portfólio.</p>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer bg-light">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <div class="current-slide-info">
+                        <span id="currentSlide">1</span> de <span id="totalSlides">@profissional.PortfolioItems?.Count</span>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">
+                            <i class="bi bi-x-lg me-1"></i> Fechar
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="downloadCurrentImage()">
+                            <i class="bi bi-download me-1"></i> Baixar Imagem
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid px-lg-5 py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-controller="Home" asp-action="Index" class="text-decoration-none">
+                    <i class="bi bi-house-door me-1"></i> Início
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-controller="Home" asp-action="Procurar" class="text-decoration-none">
+                    <i class="bi bi-search me-1"></i> Procurar Profissionais
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <i class="bi bi-person me-1"></i> @profissional.Nome
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Profile Header -->
+    <div class="profile-header mb-5">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-start">
+                    <div class="profile-avatar me-4">
+                        <div class="avatar-container">
+                            @if (!string.IsNullOrEmpty(profissional.FotoPerfil)) {
+                                <img src="@profissional.FotoPerfil"
+                                     class="profile-avatar-img"
+                                     alt="@profissional.Nome"
+                                     onerror="this.src='https://ui-avatars.com/api/?name=@Uri.EscapeDataString(profissional.Nome)&background=0D8ABC&color=fff&size=200'">
+                            } else {
+                                <div class="avatar-placeholder">
+                                    @profissional.Nome.Substring(0, 1).ToUpper()
+                                </div>
+                            }
+                            @if (isOnline) {
+                                <span class="online-status" title="Online agora">
+                                    <i class="bi bi-circle-fill"></i>
+                                </span>
+                            }
+                        </div>
+                    </div>
+                    <div class="profile-info flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h1 class="profile-name mb-1">@profissional.Nome</h1>
+                                <div class="profile-badges mb-3">
+                                    <span class="badge badge-category">
+                                        <i class="bi bi-tag me-1"></i> @profissional.Categoria
+                                    </span>
+                                    @if (!string.IsNullOrEmpty(profissional.Especialidade)) {
+                                        <span class="badge badge-specialty">
+                                            <i class="bi bi-star me-1"></i> @profissional.Especialidade
+                                        </span>
+                                    }
+                                    @if (profissional.IsPremium) {
+                                        <span class="badge badge-premium">
+                                            <i class="bi bi-award me-1"></i> Premium
+                                        </span>
+                                    }
+                                </div>
+                                <div class="profile-meta">
+                                    <span class="meta-item">
+                                        <i class="bi bi-geo-alt-fill"></i>
+                                        @profissional.Localizacao
+                                    </span>
+                                    <span class="meta-item">
+                                        <i class="bi bi-calendar-check"></i>
+                                        Membro desde @profissional.DataRegistro.ToString("MMMM yyyy")
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="profile-actions">
+                                <button class="btn btn-outline-primary btn-sm me-2" id="shareProfileBtn">
+                                    <i class="bi bi-share"></i>
+                                </button>
+                                @if (User.Identity.IsAuthenticated) {
+                                    <form asp-controller="Dashboard" asp-action="AdicionarFavorito" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="profissionalId" value="@profissional.Id" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="bi bi-heart"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                        
+                        <div class="profile-rating mb-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="star-rating-large me-3">
+                                    @{
+                                        int fullStars = (int)Math.Floor(avaliacaoMedia);
+                                        bool hasHalfStar = (avaliacaoMedia - fullStars) >= 0.5;
+                                        int emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+                                    }
+                                    @for (int i = 0; i < fullStars; i++) {
+                                        <i class="bi bi-star-fill"></i>
+                                    }
+                                    @if (hasHalfStar) {
+                                        <i class="bi bi-star-half"></i>
+                                    }
+                                    @for (int i = 0; i < emptyStars; i++) {
+                                        <i class="bi bi-star"></i>
+                                    }
+                                </div>
+                                <div>
+                                    <span class="rating-value">@avaliacaoMedia.ToString("F1")</span>
+                                    <span class="rating-count">(@totalAvaliacoes avaliações)</span>
+                                </div>
+                            </div>
+                            <div class="rating-stats">
+                                <div class="stat-item">
+                                    <i class="bi bi-check-circle text-success"></i>
+                                    <span>@servicosConcluidos serviços concluídos</span>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="bi bi-clock text-info"></i>
+                                    <span>@(isOnline ? "Online agora" : "Responde em 24h")</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Main CTA Button -->
+                        <div class="profile-cta">
+                            @if (User.Identity.IsAuthenticated) {
+                                <a asp-controller="Dashboard" asp-action="NovoServico"
+                                   asp-route-profissionalId="@profissional.Id"
+                                   class="btn btn-primary btn-lg px-5">
+                                    <i class="bi bi-file-earmark-text me-2"></i> Solicitar Serviço
+                                </a>
+                            } else {
+                                <a asp-controller="Account" asp-action="Login"
+                                   asp-route-returnUrl="@Context.Request.Path"
+                                   class="btn btn-primary btn-lg px-5">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i> Entrar para Solicitar
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="price-card">
+                    <div class="price-header">
+                        <i class="bi bi-currency-euro"></i>
+                        <span>Preço Base</span>
+                    </div>
+                    <div class="price-value">
+                        @if (profissional.PrecoBase.HasValue) {
+                            <text>€@profissional.PrecoBase.Value.ToString("F0")</text>
+                        } else {
+                            <text>Sob consulta</text>
+                        }
+                    </div>
+                    <div class="price-unit">por hora</div>
+                    <div class="price-note">
+                        <i class="bi bi-info-circle"></i>
+                        Preços podem variar conforme o projeto
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- About Section -->
+            <section class="profile-section mb-5">
+                <div class="section-header">
+                    <h2><i class="bi bi-person-lines-fill me-2"></i> Sobre</h2>
+                </div>
+                <div class="section-content">
+                    @if (!string.IsNullOrEmpty(profissional.Bio)) {
+                        <div class="bio-content" id="bioText">
+                            <p>@Html.Raw(profissional.Bio.Replace("\n", "<br>"))</p>
+                        </div>
+                        @if (profissional.Bio.Length > 500) {
+                            <button class="btn btn-link btn-read-more mt-3" id="readMoreBtn">
+                                Ler mais <i class="bi bi-chevron-down ms-1"></i>
+                            </button>
+                        }
+                    } else {
+                        <div class="empty-state">
+                            <i class="bi bi-card-text"></i>
+                            <p>Este profissional ainda não adicionou uma descrição.</p>
+                        </div>
+                    }
+                </div>
+            </section>
+
+            <!-- Portfolio Section -->
+            @if (profissional.PortfolioItems?.Any() == true) {
+                <section class="profile-section mb-5">
+                    <div class="section-header d-flex justify-content-between align-items-center">
+                        <h2>
+                            <i class="bi bi-images me-2"></i> Meus Trabalhos
+                            <span class="badge bg-primary ms-2">@profissional.PortfolioItems.Count</span>
+                        </h2>
+                        <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#portfolioModal">
+                            <i class="bi bi-arrows-angle-expand me-1"></i> Ver Portfólio Completo
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <!-- Featured Works -->
+                        @if (profissional.PortfolioItems.Any(p => p.IsFeatured)) {
+                            <div class="featured-works mb-5">
+                                <h4 class="section-subtitle mb-4">
+                                    <i class="bi bi-star-fill text-warning me-2"></i> Trabalhos Destacados
+                                </h4>
+                                <div class="featured-grid">
+                                    @foreach (var item in profissional.PortfolioItems.Where(p => p.IsFeatured).Take(3))
+                                    {
+                                        <div class="featured-work-card">
+                                            <div class="featured-work-image">
+                                                @if (!string.IsNullOrEmpty(item.ImagemUrl)) {
+                                                    <img src="@item.ImagemUrl" 
+                                                         class="img-fluid" 
+                                                         alt="@item.Titulo"
+                                                         loading="lazy">
+                                                } else {
+                                                    <div class="featured-placeholder">
+                                                        <i class="bi bi-image"></i>
+                                                    </div>
+                                                }
+                                                <div class="featured-overlay" onclick="openPortfolioModal(@profissional.PortfolioItems.ToList().IndexOf(item))">
+                                                    <button class="btn btn-light">
+                                                        <i class="bi bi-zoom-in me-1"></i> Ver Detalhes
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="featured-work-info">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <h5 class="mb-0">@item.Titulo</h5>
+                                                    <span class="badge bg-warning">
+                                                        <i class="bi bi-star-fill"></i> Destacado
+                                                    </span>
+                                                </div>
+                                                @if (!string.IsNullOrEmpty(item.Descricao)) {
+                                                    <p class="featured-description">@item.Descricao</p>
+                                                }
+                                                <div class="featured-meta">
+                                                    <small>
+                                                        <i class="bi bi-calendar me-1"></i>
+                                                        @item.DataProjeto?.ToString("MMMM yyyy")
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- All Works Grid -->
+                        <div class="all-works">
+                            <h4 class="section-subtitle mb-4">
+                                <i class="bi bi-grid-3x3-gap me-2"></i> Todos os Trabalhos
+                            </h4>
+                            <div class="works-grid">
+                                @foreach (var item in profissional.PortfolioItems.OrderByDescending(p => p.DataProjeto).Take(6))
+                                {
+                                    <div class="work-card" onclick="openPortfolioModal(@profissional.PortfolioItems.ToList().IndexOf(item))">
+                                        <div class="work-image">
+                                            @if (!string.IsNullOrEmpty(item.ImagemUrl)) {
+                                                <img src="@item.ImagemUrl" 
+                                                     class="img-fluid" 
+                                                     alt="@item.Titulo"
+                                                     loading="lazy">
+                                            } else {
+                                                <div class="work-placeholder">
+                                                    <i class="bi bi-image"></i>
+                                                </div>
+                                            }
+                                            @if (item.IsFeatured) {
+                                                <div class="work-badge">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </div>
+                                            }
+                                            <div class="work-overlay">
+                                                <div class="overlay-content">
+                                                    <h6>@item.Titulo</h6>
+                                                    <small>@item.DataProjeto?.ToString("MMM yyyy")</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            @if (profissional.PortfolioItems.Count > 6) {
+                                <div class="text-center mt-4">
+                                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#portfolioModal">
+                                        <i class="bi bi-images me-1"></i> Ver todos @profissional.PortfolioItems.Count trabalhos
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </section>
+            }
+
+            <!-- Services Section -->
+            @if (profissional.ServicosProfissionais?.Any() == true) {
+                <section class="profile-section mb-5">
+                    <div class="section-header">
+                        <h2><i class="bi bi-briefcase me-2"></i> Serviços Oferecidos</h2>
+                    </div>
+                    <div class="section-content">
+                        <div class="services-grid">
+                            @foreach (var servico in profissional.ServicosProfissionais)
+                            {
+                                <div class="service-card">
+                                    <div class="service-header">
+                                        <h5 class="service-title">@servico.Nome</h5>
+                                        <span class="service-price">€@servico.Preco.ToString("F2")</span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(servico.Descricao)) {
+                                        <p class="service-description">@servico.Descricao</p>
+                                    }
+                                    <div class="service-footer">
+                                        <div class="service-meta">
+                                            <i class="bi bi-clock"></i>
+                                            <span>Tempo variável</span>
+                                        </div>
+                                        @if (User.Identity.IsAuthenticated) {
+                                            <a asp-controller="Dashboard" asp-action="NovoServico"
+                                               asp-route-profissionalId="@profissional.Id"
+                                               asp-route-servicoId="@servico.Id"
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="bi bi-file-earmark-text me-1"></i> Solicitar
+                                            </a>
+                                        } else {
+                                            <a asp-controller="Account" asp-action="Login"
+                                               asp-route-returnUrl="@Context.Request.Path"
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="bi bi-file-earmark-text me-1"></i> Solicitar
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </section>
+            }
+
+            <!-- Reviews Section -->
+            @if (profissional.AvaliacoesRecebidas?.Any() == true) {
+                <section class="profile-section">
+                    <div class="section-header d-flex justify-content-between align-items-center">
+                        <h2>
+                            <i class="bi bi-star me-2"></i> Avaliações
+                            <span class="badge bg-primary ms-2">@totalAvaliacoes</span>
+                        </h2>
+                        <div class="average-rating">
+                            <span class="rating-number">@avaliacaoMedia.ToString("F1")</span>
+                            <span class="rating-max">/5.0</span>
+                        </div>
+                    </div>
+                    <div class="section-content">
+                        <!-- Rating Distribution -->
+                        @{
+                            var ratingDistribution = new Dictionary<int, int>
+                            {
+                                { 5, 0 }, { 4, 0 }, { 3, 0 }, { 2, 0 }, { 1, 0 }
+                            };
+                            foreach (var avaliacao in profissional.AvaliacoesRecebidas) {
+                                ratingDistribution[avaliacao.Nota]++;
+                            }
+                        }
+                        <div class="rating-distribution mb-5">
+                            <h6 class="mb-3">Distribuição de avaliações</h6>
+                            @for (int i = 5; i >= 1; i--) {
+                                var percent = totalAvaliacoes > 0 ? (ratingDistribution[i] * 100) / totalAvaliacoes : 0;
+                                <div class="distribution-row mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <span class="star-label">@i estrelas</span>
+                                        <div class="progress flex-grow-1 mx-3">
+                                            <div class="progress-bar bg-warning" style="width: @percent%"></div>
+                                        </div>
+                                        <span class="count-label">@ratingDistribution[i]</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Reviews List -->
+                        <div class="reviews-list">
+                            @foreach (var avaliacao in profissional.AvaliacoesRecebidas.OrderByDescending(a => a.DataAvaliacao).Take(5)) {
+                                <div class="review-item">
+                                    <div class="review-header">
+                                        <div class="reviewer-info">
+                                            <div class="reviewer-avatar">
+                                                @if (!string.IsNullOrEmpty(avaliacao.Avaliador?.FotoPerfil)) {
+                                                    <img src="@avaliacao.Avaliador.FotoPerfil"
+                                                         alt="@avaliacao.Avaliador?.Nome">
+                                                } else {
+                                                    <div class="avatar-placeholder-sm">
+                                                        @(avaliacao.Avaliador?.Nome?.Substring(0, 1).ToUpper() ?? "A")
+                                                    </div>
+                                                }
+                                            </div>
+                                            <div class="reviewer-details">
+                                                <h6 class="reviewer-name">@avaliacao.Avaliador?.Nome ?? "Utilizador Anónimo"</h6>
+                                                <small class="review-date">@avaliacao.DataAvaliacao.ToString("dd/MM/yyyy")</small>
+                                            </div>
+                                        </div>
+                                        <div class="review-rating">
+                                            @for (int i = 0; i < 5; i++) {
+                                                <i class="bi @(i < avaliacao.Nota ? "bi-star-fill" : "bi-star")"></i>
+                                            }
+                                        </div>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(avaliacao.Comentario)) {
+                                        <div class="review-content">
+                                            <p>"@avaliacao.Comentario"</p>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(avaliacao.Resposta)) {
+                                        <div class="review-response">
+                                            <div class="response-header">
+                                                <i class="bi bi-chat-left-text text-primary"></i>
+                                                <span>Resposta do profissional</span>
+                                            </div>
+                                            <p class="response-content">@avaliacao.Resposta</p>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+
+                        @if (totalAvaliacoes > 5) {
+                            <div class="text-center mt-4">
+                                <button class="btn btn-outline-primary" id="loadMoreReviews">
+                                    <i class="bi bi-plus-circle me-1"></i> Carregar mais avaliações
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </section>
+            }
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Contact Card -->
+            <div class="sidebar-card mb-4">
+                <div class="card-header">
+                    <h5><i class="bi bi-briefcase me-2"></i> Solicitar Serviço</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2 mb-4">
+                        @if (User.Identity.IsAuthenticated) {
+                            <a asp-controller="Dashboard" asp-action="NovoServico"
+                               asp-route-profissionalId="@profissional.Id"
+                               class="btn btn-primary">
+                                <i class="bi bi-file-earmark-text me-2"></i> Solicitar Serviço
+                            </a>
+                        } else {
+                            <a asp-controller="Account" asp-action="Login"
+                               asp-route-returnUrl="@Context.Request.Path"
+                               class="btn btn-primary">
+                                <i class="bi bi-box-arrow-in-right me-2"></i> Entrar para Solicitar
+                            </a>
+                        }
+                    </div>
+                    
+                    <div class="contact-info">
+                        <h6 class="section-title mb-3">
+                            <i class="bi bi-info-circle me-2"></i> Informações
+                        </h6>
+                        <ul class="info-list">
+                            <li class="info-item">
+                                <i class="bi bi-geo-alt"></i>
+                                <div>
+                                    <strong>Localização</strong>
+                                    <span>@profissional.Localizacao</span>
+                                </div>
+                            </li>
+                            <li class="info-item">
+                                <i class="bi bi-currency-euro"></i>
+                                <div>
+                                    <strong>Preço base</strong>
+                                    <span>@(profissional.PrecoBase.HasValue ? $"€{profissional.PrecoBase.Value:F2}/hora" : "Sob consulta")</span>
+                                </div>
+                            </li>
+                            <li class="info-item">
+                                <i class="bi bi-clock"></i>
+                                <div>
+                                    <strong>Tempo de resposta</strong>
+                                    <span>@(isOnline ? "Online agora" : "Normalmente em 24h")</span>
+                                </div>
+                            </li>
+                            <li class="info-item">
+                                <i class="bi bi-calendar-check"></i>
+                                <div>
+                                    <strong>Membro desde</strong>
+                                    <span>@profissional.DataRegistro.ToString("MMMM yyyy")</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Card -->
+            <div class="sidebar-card mb-4">
+                <div class="card-header">
+                    <h5><i class="bi bi-graph-up me-2"></i> Estatísticas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-value text-primary">@servicosConcluidos</div>
+                            <div class="stat-label">Serviços</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value text-success">98%</div>
+                            <div class="stat-label">Conclusão</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value text-warning">@avaliacaoMedia.ToString("F1")</div>
+                            <div class="stat-label">Avaliação</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value text-info">24h</div>
+                            <div class="stat-label">Resposta</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portfolio Stats -->
+            <div class="sidebar-card mb-4">
+                <div class="card-header">
+                    <h5><i class="bi bi-images me-2"></i> Estatísticas do Portfólio</h5>
+                </div>
+                <div class="card-body">
+                    <div class="portfolio-stats">
+                        <div class="stat-item-large mb-3">
+                            <div class="stat-icon">
+                                <i class="bi bi-images text-primary"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">@profissional.PortfolioItems?.Count</div>
+                                <div class="stat-label">Trabalhos no Portfólio</div>
+                            </div>
+                        </div>
+                        <div class="stat-item-large mb-3">
+                            <div class="stat-icon">
+                                <i class="bi bi-star-fill text-warning"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">@profissional.PortfolioItems?.Count(p => p.IsFeatured)</div>
+                                <div class="stat-label">Trabalhos Destacados</div>
+                            </div>
+                        </div>
+                        <div class="stat-item-large">
+                            <div class="stat-icon">
+                                <i class="bi bi-calendar text-info"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">
+                                    @if (profissional.PortfolioItems?.Any() == true) {
+                                        var oldest = profissional.PortfolioItems.Min(p => p.DataProjeto)?.Year;
+                                        var newest = profissional.PortfolioItems.Max(p => p.DataProjeto)?.Year;
+                                        if (oldest == newest) {
+                                            <text>@newest</text>
+                                        } else {
+                                            <text>@oldest - @newest</text>
+                                        }
+                                    } else {
+                                        <text>-</text>
+                                    }
+                                </div>
+                                <div class="stat-label">Período de Trabalho</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Similar Professionals -->
+            @if (ViewBag.ProfissionaisSugeridos != null) {
+                <div class="sidebar-card">
+                    <div class="card-header">
+                        <h5><i class="bi bi-people me-2"></i> Profissionais Similares</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="similar-pros">
+                            @foreach (var prof in ViewBag.ProfissionaisSugeridos as List<EDSG.Models.ApplicationUser> ?? new List<EDSG.Models.ApplicationUser>()) {
+                                var profRating = prof.AvaliacaoMedia;
+                                <a asp-controller="Home" asp-action="DetalhesProfissional" asp-route-id="@prof.Id"
+                                   class="similar-pro-item">
+                                    <div class="pro-avatar">
+                                        @if (!string.IsNullOrEmpty(prof.FotoPerfil)) {
+                                            <img src="@prof.FotoPerfil" alt="@prof.Nome">
+                                        } else {
+                                            <div class="avatar-placeholder-xs">
+                                                @prof.Nome.Substring(0, 1).ToUpper()
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="pro-info">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <h6 class="pro-name">@prof.Nome</h6>
+                                            @if (prof.IsPremium) {
+                                                <i class="bi bi-star-fill text-warning" title="Premium"></i>
+                                            }
+                                        </div>
+                                        <small class="pro-category">@prof.Categoria</small>
+                                        <div class="pro-rating">
+                                            <div class="stars">
+                                                @for (int i = 0; i < 5; i++) {
+                                                    <i class="bi @(i < Math.Floor(profRating) ? "bi-star-fill" : "bi-star")"></i>
+                                                }
+                                            </div>
+                                            <small class="rating-value">@profRating.ToString("F1")</small>
+                                        </div>
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Portfolio Modal Functionality
+            const portfolioModal = document.getElementById('portfolioModal');
+            if (portfolioModal) {
+                const carousel = new bootstrap.Carousel(document.getElementById('portfolioCarousel'));
+                const totalSlides = @profissional.PortfolioItems?.Count ?? 0;
+                
+                // Update slide counter
+                document.getElementById('totalSlides').textContent = totalSlides;
+                
+                // Listen for slide events
+                document.getElementById('portfolioCarousel').addEventListener('slid.bs.carousel', function (event) {
+                    const activeIndex = event.to;
+                    document.getElementById('currentSlide').textContent = activeIndex + 1;
+                    
+                    // Update active thumbnail
+                    document.querySelectorAll('.thumbnail-item').forEach((thumb, index) => {
+                        thumb.classList.toggle('active', index === activeIndex);
+                    });
+                });
+                
+                // Filter portfolio items
+                document.getElementById('portfolioFilter')?.addEventListener('change', function() {
+                    const filter = this.value;
+                    const thumbnails = document.querySelectorAll('.thumbnail-item');
+                    
+                    thumbnails.forEach(thumb => {
+                        switch(filter) {
+                            case 'all':
+                                thumb.style.display = 'block';
+                                break;
+                            case 'featured':
+                                if (thumb.dataset.featured === 'True') {
+                                    thumb.style.display = 'block';
+                                } else {
+                                    thumb.style.display = 'none';
+                                }
+                                break;
+                            case 'recent':
+                                const itemDate = new Date(thumb.dataset.date || 0);
+                                const thirtyDaysAgo = new Date();
+                                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                                
+                                if (itemDate >= thirtyDaysAgo) {
+                                    thumb.style.display = 'block';
+                                } else {
+                                    thumb.style.display = 'none';
+                                }
+                                break;
+                        }
+                    });
+                    
+                    // Update count badge
+                    const visibleCount = Array.from(thumbnails).filter(t => t.style.display !== 'none').length;
+                    document.getElementById('portfolioCountBadge').textContent = visibleCount;
+                });
+            }
+
+            // Function to open portfolio modal at specific slide
+            window.openPortfolioModal = function(slideIndex) {
+                const modal = new bootstrap.Modal(document.getElementById('portfolioModal'));
+                modal.show();
+                
+                // Wait for modal to be shown, then navigate to slide
+                setTimeout(() => {
+                    const carousel = bootstrap.Carousel.getInstance(document.getElementById('portfolioCarousel'));
+                    if (carousel) {
+                        carousel.to(slideIndex);
+                    }
+                }, 500);
+            };
+
+            // Function to go to specific slide from thumbnail
+            window.goToSlide = function(slideIndex) {
+                const carousel = bootstrap.Carousel.getInstance(document.getElementById('portfolioCarousel'));
+                if (carousel) {
+                    carousel.to(slideIndex);
+                }
+            };
+
+            // Download current image
+            window.downloadCurrentImage = function() {
+                const currentSlide = document.querySelector('#portfolioCarousel .carousel-item.active');
+                const image = currentSlide?.querySelector('img');
+                
+                if (image && image.src) {
+                    const link = document.createElement('a');
+                    link.href = image.src;
+                    link.download = 'portfolio-item.jpg';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    // Show success message
+                    showToast('Imagem baixada com sucesso!', 'success');
+                } else {
+                    showToast('Não foi possível baixar a imagem.', 'danger');
+                }
+            };
+
+            // Share Profile
+            document.getElementById('shareProfileBtn')?.addEventListener('click', function() {
+                const shareUrl = window.location.href;
+                const shareText = `Confira o portfólio de ${profissional.Nome} no EDSG`;
+
+                if (navigator.share) {
+                    navigator.share({
+                        title: `Portfólio - ${profissional.Nome}`,
+                        text: shareText,
+                        url: shareUrl
+                    });
+                } else {
+                    navigator.clipboard.writeText(shareUrl).then(() => {
+                        showToast('Link copiado para a área de transferência!', 'success');
+                    });
+                }
+            });
+
+            // Read More functionality for bio
+            const bioText = document.getElementById('bioText');
+            const readMoreBtn = document.getElementById('readMoreBtn');
+
+            if (bioText && readMoreBtn) {
+                const fullText = bioText.innerHTML;
+                const shortText = fullText.substring(0, 500) + '...';
+
+                if (fullText.length > 500) {
+                    bioText.innerHTML = shortText;
+                    readMoreBtn.style.display = 'block';
+                    
+                    readMoreBtn.addEventListener('click', function() {
+                        if (bioText.innerHTML === shortText) {
+                            bioText.innerHTML = fullText;
+                            this.innerHTML = 'Ler menos <i class="bi bi-chevron-up ms-1"></i>';
+                        } else {
+                            bioText.innerHTML = shortText;
+                            this.innerHTML = 'Ler mais <i class="bi bi-chevron-down ms-1"></i>';
+                        }
+                    });
+                } else {
+                    readMoreBtn.style.display = 'none';
+                }
+            }
+
+            // Load More Reviews
+            document.getElementById('loadMoreReviews')?.addEventListener('click', async function(e) {
+                e.preventDefault();
+                const originalText = this.innerHTML;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> A carregar...';
+                this.disabled = true;
+
+                // Simulate loading
+                setTimeout(() => {
+                    this.innerHTML = '<i class="bi bi-check-circle me-1"></i> Não há mais avaliações';
+                    this.classList.remove('btn-outline-primary');
+                    this.classList.add('btn-outline-secondary');
+                    this.disabled = true;
+                }, 1500);
+            });
+
+            // Toast notification function
+            function showToast(message, type = 'info') {
+                // Create toast container if it doesn't exist
+                let container = document.getElementById('toastContainer');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'toastContainer';
+                    container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                    container.style.zIndex = '1060';
+                    document.body.appendChild(container);
+                }
+
+                // Create toast
+                const toast = document.createElement('div');
+                toast.className = `toast align-items-center text-bg-${type} border-0`;
+                toast.setAttribute('role', 'alert');
+                
+                toast.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="bi ${type === 'success' ? 'bi-check-circle' : 'bi-info-circle'} me-2"></i>
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                `;
+
+                container.appendChild(toast);
+                const bsToast = new bootstrap.Toast(toast);
+                bsToast.show();
+
+                // Remove toast after it's hidden
+                toast.addEventListener('hidden.bs.toast', () => {
+                    toast.remove();
+                });
+            }
+
+            // Initialize tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+
+    <style>
+        /* Profile Header */
+        .profile-header {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+
+        .profile-avatar {
+            position: relative;
+        }
+
+        .avatar-container {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .profile-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            font-weight: bold;
+        }
+
+        .online-status {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            background: #22c55e;
+            border-radius: 50%;
+            border: 3px solid white;
+            animation: pulse 2s infinite;
+        }
+
+        @@keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+
+        .profile-name {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        .profile-badges {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .badge-category {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 500;
+        }
+
+        .badge-specialty {
+            background: linear-gradient(135deg, #4ade80 0%, #22d3ee 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 500;
+        }
+
+        .badge-premium {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 500;
+        }
+
+        .profile-meta {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .meta-item i {
+            color: #667eea;
+        }
+
+        .profile-rating {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 1.5rem;
+        }
+
+        .star-rating-large {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .star-rating-large i {
+            font-size: 1.5rem;
+            color: #fbbf24;
+        }
+
+        .rating-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-right: 0.5rem;
+        }
+
+        .rating-count {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .rating-stats {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .stat-item i {
+            font-size: 1.1rem;
+        }
+
+        .profile-cta .btn {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .profile-cta .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Price Card */
+        .price-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.2);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .price-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .price-header i {
+            font-size: 1.3rem;
+        }
+
+        .price-value {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .price-unit {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .price-note {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        /* Sections */
+        .profile-section {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .profile-section:hover {
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 1.75rem 2rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a202c;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-header h2 i {
+            color: #667eea;
+        }
+
+        .section-content {
+            padding: 2rem;
+        }
+
+        /* Bio Section */
+        .bio-content {
+            line-height: 1.7;
+            color: #4a5568;
+            font-size: 1.05rem;
+        }
+
+        .btn-read-more {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 0;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .btn-read-more:hover {
+            color: #5a67d8;
+        }
+
+        /* Portfolio Fullscreen Modal */
+        .portfolio-fullscreen {
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+        }
+
+        #portfolioCarousel {
+            flex: 1;
+            background: #000;
+        }
+
+        .portfolio-modal-content {
+            display: flex;
+            height: 100%;
+        }
+
+        .portfolio-image-container {
+            flex: 2;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portfolio-image-container img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        .portfolio-details {
+            flex: 1;
+            background: #fff;
+            padding: 2rem;
+            overflow-y: auto;
+            max-width: 500px;
+        }
+
+        .portfolio-title-large {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #1a202c;
+        }
+
+        .portfolio-description-large {
+            color: #4a5568;
+            line-height: 1.7;
+            margin-bottom: 2rem;
+        }
+
+        .portfolio-meta-large {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .meta-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .meta-item i {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .meta-label {
+            display: block;
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+
+        .meta-value {
+            display: block;
+            font-weight: 600;
+            color: #1a202c;
+        }
+
+        .featured-badge-large {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 10;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Thumbnails Section */
+        .portfolio-thumbnails {
+            background: #1a202c;
+            padding: 1rem;
+            height: 150px;
+            overflow-x: auto;
+            border-top: 1px solid #2d3748;
+        }
+
+        .thumbnails-container {
+            display: flex;
+            gap: 0.75rem;
+            height: 100%;
+            padding: 0.5rem;
+        }
+
+        .thumbnail-item {
+            flex-shrink: 0;
+            width: 150px;
+            height: 100%;
+            cursor: pointer;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .thumbnail-item.active {
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+
+        .thumbnail-item:hover {
+            border-color: #4ade80;
+            transform: scale(1.05);
+        }
+
+        .thumbnail-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .thumbnail-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .thumbnail-placeholder {
+            width: 100%;
+            height: 100%;
+            background: #2d3748;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-size: 1.5rem;
+        }
+
+        .thumbnail-featured {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #fbbf24;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            z-index: 2;
+        }
+
+        .thumbnail-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            padding: 0.75rem;
+            color: white;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .thumbnail-item:hover .thumbnail-overlay {
+            transform: translateY(0);
+        }
+
+        .thumbnail-overlay h6 {
+            margin: 0;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .thumbnail-overlay small {
+            font-size: 0.7rem;
+            opacity: 0.9;
+        }
+
+        /* Featured Works */
+        .featured-works {
+            margin-bottom: 3rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1a202c;
+            display: flex;
+            align-items: center;
+        }
+
+        .featured-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .featured-work-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .featured-work-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+            border-color: #667eea;
+        }
+
+        .featured-work-image {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .featured-work-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .featured-work-card:hover .featured-work-image img {
+            transform: scale(1.05);
+        }
+
+        .featured-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-size: 2rem;
+        }
+
+        .featured-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            cursor: pointer;
+        }
+
+        .featured-work-card:hover .featured-overlay {
+            opacity: 1;
+        }
+
+        .featured-work-info {
+            padding: 1.5rem;
+        }
+
+        .featured-description {
+            color: #64748b;
+            line-height: 1.6;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .featured-meta {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1rem;
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        /* All Works Grid */
+        .works-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .work-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+            height: 200px;
+        }
+
+        .work-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .work-image {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .work-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .work-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-size: 1.5rem;
+        }
+
+        .work-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #fbbf24;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            z-index: 2;
+        }
+
+        .work-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            padding: 1rem;
+            color: white;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .work-card:hover .work-overlay {
+            transform: translateY(0);
+        }
+
+        .work-overlay h6 {
+            margin: 0 0 0.25rem 0;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .work-overlay small {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        /* Portfolio Stats */
+        .portfolio-stats {
+            padding: 0.5rem;
+        }
+
+        .stat-item-large {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item-large:hover {
+            background: #f1f5f9;
+            transform: translateX(5px);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .stat-content {
+            flex-grow: 1;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a202c;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        /* Empty States */
+        .empty-portfolio-fullscreen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            background: #f8fafc;
+        }
+
+        .empty-state-large {
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .empty-state-large i {
+            font-size: 4rem;
+            opacity: 0.3;
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-state-large h3 {
+            margin-bottom: 1rem;
+        }
+
+        /* Services Section */
+        .services-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .service-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .service-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .service-title {
+            font-weight: 600;
+            color: #1a202c;
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .service-price {
+            background: linear-gradient(135deg, #4ade80 0%, #22d3ee 100%);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .service-description {
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .service-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .service-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        /* Reviews */
+        .average-rating {
+            display: flex;
+            align-items: baseline;
+        }
+
+        .rating-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1a202c;
+        }
+
+        .rating-max {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin-left: 0.25rem;
+        }
+
+        .rating-distribution {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
+        .distribution-row {
+            display: flex;
+            align-items: center;
+        }
+
+        .star-label {
+            width: 70px;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .progress {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        }
+
+        .count-label {
+            width: 40px;
+            text-align: right;
+            color: #64748b;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .reviews-list {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .review-item {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .reviewer-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .reviewer-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .reviewer-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-placeholder-sm {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .reviewer-details h6 {
+            margin: 0;
+            font-size: 1rem;
+            color: #1a202c;
+        }
+
+        .review-date {
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        .review-rating {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .review-rating i {
+            color: #fbbf24;
+            font-size: 1rem;
+        }
+
+        .review-content p {
+            margin: 0;
+            color: #4a5568;
+            line-height: 1.6;
+            font-style: italic;
+        }
+
+        .review-response {
+            background: #f0f9ff;
+            border: 1px solid #e0f2fe;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .response-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            color: #0369a1;
+            font-weight: 500;
+        }
+
+        .response-content {
+            margin: 0;
+            color: #0c4a6e;
+            line-height: 1.6;
+        }
+
+        /* Sidebar Cards */
+        .sidebar-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+        }
+
+        .sidebar-card .card-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .sidebar-card .card-header h5 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #1a202c;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-card .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Contact Info */
+        .section-title {
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-item i {
+            color: #667eea;
+            font-size: 1.1rem;
+            margin-top: 0.25rem;
+            flex-shrink: 0;
+        }
+
+        .info-item div {
+            flex-grow: 1;
+        }
+
+        .info-item strong {
+            display: block;
+            font-size: 0.9rem;
+            color: #1a202c;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-item span {
+            display: block;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 1.25rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            background: #f1f5f9;
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        /* Similar Professionals */
+        .similar-pros {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .similar-pro-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .similar-pro-item:hover {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+            transform: translateX(5px);
+        }
+
+        .pro-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .pro-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-placeholder-xs {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .pro-info {
+            flex-grow: 1;
+        }
+
+        .pro-name {
+            margin: 0;
+            font-size: 0.95rem;
+            color: #1a202c;
+            font-weight: 600;
+        }
+
+        .pro-category {
+            display: block;
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .pro-rating {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pro-rating .stars {
+            display: flex;
+            gap: 0.1rem;
+        }
+
+        .pro-rating .stars i {
+            font-size: 0.8rem;
+            color: #fbbf24;
+        }
+
+        .pro-rating .rating-value {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        /* Empty States */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #94a3b8;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        /* Scrollbar for thumbnails */
+        .portfolio-thumbnails::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .portfolio-thumbnails::-webkit-scrollbar-track {
+            background: #2d3748;
+            border-radius: 3px;
+        }
+
+        .portfolio-thumbnails::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 3px;
+        }
+
+        .portfolio-thumbnails::-webkit-scrollbar-thumb:hover {
+            background: #667eea;
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 1200px) {
+            .works-grid {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            }
+        }
+
+        @@media (max-width: 992px) {
+            .profile-header {
+                padding: 2rem;
+            }
+            
+            .profile-name {
+                font-size: 1.8rem;
+            }
+            
+            .price-value {
+                font-size: 2.5rem;
+            }
+            
+            .works-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            }
+            
+            .portfolio-modal-content {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .portfolio-image-container {
+                height: 50vh;
+            }
+            
+            .portfolio-details {
+                max-width: 100%;
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .profile-header {
+                padding: 1.5rem;
+            }
+            
+            .d-flex.align-items-start {
+                flex-direction: column;
+            }
+            
+            .profile-avatar {
+                margin-bottom: 1.5rem;
+            }
+            
+            .profile-meta {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .rating-stats {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .section-header,
+            .section-content {
+                padding: 1.25rem;
+            }
+            
+            .works-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .featured-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .profile-header {
+                border-radius: 16px;
+                padding: 1.25rem;
+            }
+            
+            .avatar-container {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .profile-name {
+                font-size: 1.6rem;
+            }
+            
+            .profile-cta .btn {
+                width: 100%;
+                padding: 0.875rem;
+            }
+            
+            .price-card {
+                margin-top: 1.5rem;
+                padding: 1.5rem;
+            }
+            
+            .price-value {
+                font-size: 2rem;
+            }
+            
+            .works-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .work-card {
+                height: 250px;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+}

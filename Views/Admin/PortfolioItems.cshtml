@@ -1,0 +1,497 @@
+﻿@model List<EDSG.Models.PortfolioItem>
+@{
+    ViewData["Title"] = "Itens de Portfólio";
+    var activeCount = Model.Count(pi => pi.IsAtivo);
+    var inactiveCount = Model.Count(pi => !pi.IsAtivo);
+}
+
+@functions {
+    string Truncate(string text, int length) {
+        if (string.IsNullOrEmpty(text)) return text;
+        return text.Length > length ? text.Substring(0, length - 1) + "..." : text;
+    }
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3 mb-2">
+                <i class="bi bi-images text-warning me-2"></i>Gestão de Portfólio
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="ServicosProfissionais">Serviços Profissionais</a></li>
+                    <li class="breadcrumb-item active">Portfólio</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-auto">
+            <a href="#" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                <i class="bi bi-cloud-upload me-1"></i> Upload em Massa
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light py-3">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros Avançados</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label">Pesquisar</label>
+                    <input type="text" class="form-control" name="search"
+                           placeholder="Título, descrição ou profissional" value="@ViewBag.Search">
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Serviço Profissional</label>
+                    <select class="form-select" name="servicoProfissionalId">
+                        <option value="">Todos os serviços</option>
+                        @foreach (var service in Model.Select(pi => pi.ServicoProfissional).Distinct()) {
+                            if (service != null) {
+                                <option value="@service.Id"
+                                        selected="@(ViewBag.ServicoProfissionalId == service.Id)">
+                                    @service.Nome
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Tipo de Conteúdo</label>
+                    <select class="form-select" name="contentType">
+                        <option value="">Todos os tipos</option>
+                        <option value="image">Imagens</option>
+                        <option value="video">Vídeos</option>
+                        <option value="document">Documentos</option>
+                        <option value="link">Links</option>
+                    </select>
+                </div>
+                <div class="col-lg-2 col-md-6 d-flex align-items-end">
+                    <div class="d-grid gap-2 w-100">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-search"></i> Filtrar
+                        </button>
+                        <a asp-action="PortfolioItems" class="btn btn-outline-secondary">Limpar</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-warning border-4 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-warning text-uppercase mb-1">
+                                Total Itens
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">@Model.Count</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-images text-warning fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-success border-4 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-success text-uppercase mb-1">
+                                Itens Ativos
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">@activeCount</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-check-circle-fill text-success fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-primary border-4 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">
+                                Por Serviço
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">
+                                @Model.GroupBy(pi => pi.ServicoProfissionalId).Count()
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-briefcase text-primary fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-info border-4 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-info text-uppercase mb-1">
+                                Últimos 7 Dias
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">
+                                @Model.Count(pi => pi.DataCriacao > DateTime.Now.AddDays(-7))
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-calendar-week text-info fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Items -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-grid-3x3-gap me-2"></i>Galeria de Portfólio (@Model.Count)
+            </h5>
+            <div class="dropdown">
+                <button class="btn btn-warning btn-sm dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown">
+                    <i class="bi bi-plus-circle me-1"></i> Adicionar
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-image"></i> Imagem</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-play-btn"></i> Vídeo</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark"></i> Documento</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-link"></i> Link Externo</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (TempData["SuccessMessage"] != null) {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (!Model.Any()) {
+                <div class="text-center py-5">
+                    <div class="text-muted mb-4">
+                        <i class="bi bi-images display-1"></i>
+                        <h4 class="mt-4">Nenhum item de portfólio encontrado</h4>
+                        <p class="mb-4">Adicione itens ao portfólio para mostrar o trabalho dos profissionais.</p>
+                        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                            <i class="bi bi-cloud-upload me-1"></i> Upload de Itens
+                        </button>
+                    </div>
+                </div>
+            } else {
+                <div class="row">
+                    @foreach (var item in Model.OrderByDescending(pi => pi.DataCriacao)) {
+                        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 mb-4">
+                            <div class="card portfolio-item-card h-100">
+                                <div class="portfolio-item-image position-relative">
+                                    <!-- Tipo de conteúdo baseado no título ou descrição -->
+                                    @{
+                                        var isImage = item.Titulo?.ToLower().Contains("img") == true ||
+                                        item.Titulo?.ToLower().Contains("image") == true ||
+                                        item.Descricao?.ToLower().Contains("img") == true;
+                                        var isVideo = item.Titulo?.ToLower().Contains("video") == true ||
+                                        item.Titulo?.ToLower().Contains("youtube") == true;
+                                    }
+
+                                    @if (isImage) {
+                                        <div class="bg-light rounded-top d-flex align-items-center justify-content-center"
+                                             style="height: 180px; overflow: hidden;">
+                                            <i class="bi bi-image text-warning" style="font-size: 3rem;"></i>
+                                        </div>
+                                    } else if (isVideo) {
+                                        <div class="bg-dark rounded-top d-flex align-items-center justify-content-center"
+                                             style="height: 180px;">
+                                            <i class="bi bi-play-btn text-warning" style="font-size: 3rem;"></i>
+                                        </div>
+                                    } else {
+                                        <div class="bg-secondary rounded-top d-flex align-items-center justify-content-center"
+                                             style="height: 180px;">
+                                            <i class="bi bi-file-earmark text-light" style="font-size: 3rem;"></i>
+                                        </div>
+                                    }
+
+                                    <div class="position-absolute top-0 end-0 m-2">
+                                        <span class="badge @(item.IsAtivo ? "bg-success" : "bg-secondary")">
+                                            @(item.IsAtivo ? "Ativo" : "Inativo")
+                                        </span>
+                                    </div>
+
+                                    <div class="position-absolute bottom-0 start-0 m-2">
+                                        <span class="badge bg-info">
+                                            @(isImage ? "IMAGEM" : isVideo ? "VÍDEO" : "DOCUMENTO")
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="card-body">
+                                    <h6 class="card-title mb-1">@item.Titulo</h6>
+                                    <p class="card-text small text-muted mb-2">
+                                        @Truncate(item.Descricao ?? "", 80)
+                                    </p>
+
+                                    <div class="small text-muted mb-3">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <i class="bi bi-person me-1"></i>
+                                            <span>@item.Profissional?.Nome</span>
+                                        </div>
+                                        @if (item.ServicoProfissional != null) {
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-briefcase me-1"></i>
+                                                <span>@item.ServicoProfissional.Nome</span>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        <i class="bi bi-calendar me-1"></i>
+                                        @item.DataCriacao.ToString("dd/MM/yyyy")
+                                        <span class="ms-2">
+                                            <i class="bi bi-eye me-1"></i>0
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="card-footer bg-white border-top-0">
+                                    <div class="d-flex justify-content-between">
+                                        <form asp-action="TogglePortfolioItemStatus" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <button type="submit"
+                                                    class="btn btn-sm @(item.IsAtivo ? "btn-outline-warning" : "btn-outline-success")"
+                                                    data-bs-toggle="tooltip"
+                                                    title="@(item.IsAtivo ? "Desativar item" : "Ativar item")">
+                                                <i class="bi bi-power"></i>
+                                            </button>
+                                        </form>
+
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                    data-bs-toggle="tooltip" title="Visualizar">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-info"
+                                                    data-bs-toggle="tooltip" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    data-bs-toggle="tooltip" title="Eliminar"
+                                                    onclick="deletePortfolioItem(@item.Id)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+        <div class="card-footer bg-light py-3">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <div class="me-4">
+                            <div class="text-muted small">Conteúdo Ativo</div>
+                            <div class="fw-bold h5 mb-0 text-success">
+                                @((activeCount * 100) / (Model.Count > 0 ? Model.Count : 1))%
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Última Atualização</div>
+                            <div class="fw-bold h5 mb-0 text-warning">
+                                @(Model.Max(pi => pi.DataCriacao).ToString("dd/MM"))
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <nav aria-label="Page navigation" class="d-flex justify-content-end">
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item disabled"><a class="page-link" href="#">Anterior</a></li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item"><a class="page-link" href="#">Próxima</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Modal (mantido igual) -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-cloud-upload me-2"></i>Upload em Massa
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <i class="bi bi-cloud-arrow-up display-4 text-warning"></i>
+                    <p class="mt-3">Arraste e solte arquivos ou clique para selecionar</p>
+                </div>
+
+                <div class="dropzone border-dashed rounded p-4 text-center mb-3"
+                     style="border: 2px dashed #dee2e6; cursor: pointer;"
+                     onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" multiple class="d-none"
+                           accept="image/*,video/*,.pdf,.doc,.docx">
+                    <div class="py-3">
+                        <i class="bi bi-upload display-6 text-muted"></i>
+                        <p class="mt-2 mb-0">Clique para selecionar arquivos</p>
+                        <small class="text-muted">Suporta imagens, vídeos e documentos</small>
+                    </div>
+                </div>
+
+                <div class="selected-files" id="selectedFiles"></div>
+
+                <div class="mt-4">
+                    <label class="form-label">Atribuir a Serviço Profissional</label>
+                    <select class="form-select" id="serviceSelect">
+                        <option value="">Selecione um serviço</option>
+                        @foreach (var service in Model.Select(pi => pi.ServicoProfissional).Distinct()) {
+                            if (service != null) {
+                                <option value="@service.Id">@service.Nome</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" onclick="uploadFiles()">
+                    <i class="bi bi-upload me-1"></i> Iniciar Upload
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            // Tooltips
+            $('[data-bs-toggle="tooltip"]').tooltip();
+
+            // Drag and drop
+            $('.dropzone').on('dragover', function(e) {
+                e.preventDefault();
+                $(this).addClass('border-primary');
+            }).on('dragleave', function(e) {
+                e.preventDefault();
+                $(this).removeClass('border-primary');
+            }).on('drop', function(e) {
+                e.preventDefault();
+                $(this).removeClass('border-primary');
+                handleFiles(e.originalEvent.dataTransfer.files);
+            });
+
+            // File input change
+            $('#fileInput').on('change', function() {
+                handleFiles(this.files);
+            });
+        });
+
+        function handleFiles(files) {
+            const container = $('#selectedFiles');
+            container.empty();
+
+            Array.from(files).forEach((file, index) => {
+                const div = $('<div>').addClass('selected-file d-flex justify-content-between align-items-center p-2 mb-2 bg-light rounded');
+
+                const infoDiv = $('<div>').addClass('d-flex align-items-center');
+                const icon = file.type.startsWith('image/') ? 'bi-image' :
+                             file.type.startsWith('video/') ? 'bi-play-btn' : 'bi-file-earmark';
+
+                infoDiv.append(
+                    $('<i>').addClass(`bi ${icon} me-2`),
+                    $('<span>').addClass('small').text(file.name),
+                    $('<span>').addClass('ms-2 text-muted').text(`(${(file.size / 1024 / 1024).toFixed(2)} MB)`)
+                );
+
+                const removeBtn = $('<button>').addClass('btn btn-sm btn-outline-danger')
+                    .html('<i class="bi bi-x"></i>')
+                    .on('click', () => div.remove());
+
+                div.append(infoDiv, removeBtn);
+                container.append(div);
+            });
+        }
+
+        function uploadFiles() {
+            const files = $('#fileInput')[0].files;
+            const serviceId = $('#serviceSelect').val();
+
+            if (files.length === 0) {
+                alert('Selecione pelo menos um arquivo.');
+                return;
+            }
+
+            if (!serviceId) {
+                alert('Selecione um serviço profissional.');
+                return;
+            }
+
+            // Implementar upload AJAX aqui
+            alert(`Iniciando upload de ${files.length} arquivos para o serviço ID: ${serviceId}`);
+            $('#uploadModal').modal('hide');
+        }
+
+        function deletePortfolioItem(id) {
+            if (confirm('Tem certeza que deseja eliminar este item do portfólio? Esta ação não pode ser revertida.')) {
+                // Implementar eliminação via AJAX
+                console.log('Eliminar item:', id);
+            }
+        }
+    </script>
+
+    <style>
+        .portfolio-item-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+            .portfolio-item-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+            }
+
+        .portfolio-item-image {
+            overflow: hidden;
+        }
+
+        .border-dashed {
+            border-style: dashed !important;
+        }
+
+        .selected-file {
+            border: 1px solid #dee2e6;
+        }
+    </style>
+}

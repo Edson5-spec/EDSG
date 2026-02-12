@@ -1,0 +1,100 @@
+﻿@model EDSG.Controllers.ChangeEmailViewModel
+@{
+    ViewData["Title"] = "Alterar Email";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg">
+                <div class="card-header bg-warning text-white">
+                    <h4 class="mb-0"><i class="bi bi-envelope"></i> @ViewData["Title"]</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-controller="Account" asp-action="ChangeEmail" method="post" id="changeEmailForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        @if (TempData["SuccessMessage"] != null)
+                        {
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+                            </div>
+                        }
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            Após alterar seu email, você precisará confirmá-lo através de um link que será enviado para o novo endereço.
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="CurrentEmail" class="form-label"></label>
+                            <input asp-for="CurrentEmail" class="form-control" readonly />
+                            <span asp-validation-for="CurrentEmail" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="NewEmail" class="form-label"></label>
+                            <input asp-for="NewEmail" class="form-control" type="email" />
+                            <span asp-validation-for="NewEmail" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="ConfirmNewEmail" class="form-label"></label>
+                            <input asp-for="ConfirmNewEmail" class="form-control" type="email" />
+                            <span asp-validation-for="ConfirmNewEmail" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                            <a asp-controller="Account" asp-action="Profile" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-warning" id="submitBtn">
+                                <i class="bi bi-envelope-check"></i> Alterar Email
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        // Form submission
+        const form = document.getElementById('changeEmailForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', function(e) {
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> A processar...';
+            
+            // Resetar após 5 segundos se houver erro
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }, 5000);
+        });
+
+        // Verificar se os emails coincidem
+        const newEmail = document.getElementById('NewEmail');
+        const confirmEmail = document.getElementById('ConfirmNewEmail');
+        
+        if (newEmail && confirmEmail) {
+            confirmEmail.addEventListener('input', function() {
+                const newEmailValue = newEmail.value;
+                const confirmEmailValue = this.value;
+                
+                if (newEmailValue && confirmEmailValue && newEmailValue !== confirmEmailValue) {
+                    this.classList.add('is-invalid');
+                } else {
+                    this.classList.remove('is-invalid');
+                }
+            });
+        }
+    </script>
+}

@@ -1,0 +1,827 @@
+﻿@* Views/Premium/Index.cshtml *@
+@model EDSG.Controllers.PremiumViewModel
+
+@{
+    ViewData["Title"] = "Premium";
+}
+
+<style>
+    /* Cores personalizadas para gradientes */
+    .premium-gradient-primary {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+        border: none;
+    }
+
+    .premium-gradient-success {
+        background: linear-gradient(135deg, #10b981 0%, #34d399 100%) !important;
+        border: none;
+    }
+
+    /* Cards com efeito de vidro */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        border-radius: 16px;
+    }
+
+    .glass-card-dark {
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        border-radius: 16px;
+    }
+
+    /* Efeito hover suave */
+    .hover-lift {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+        .hover-lift:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12) !important;
+        }
+
+    /* Badges premium */
+    .premium-badge {
+        background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        color: #1f2937;
+        font-weight: 700;
+        padding: 0.5rem 1.25rem;
+        border-radius: 50px;
+        border: 2px solid rgba(245, 158, 11, 0.3);
+    }
+
+    /* Estatísticas cards */
+    .stat-card {
+        border: none;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        position: relative;
+    }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+    .stat-card-primary {
+        border-top: 4px solid #6366f1;
+    }
+
+    .stat-card-success {
+        border-top: 4px solid #10b981;
+    }
+
+    .stat-card-info {
+        border-top: 4px solid #06b6d4;
+    }
+
+    .stat-card-warning {
+        border-top: 4px solid #f59e0b;
+    }
+
+    /* Títulos com gradiente */
+    .gradient-text {
+        color: #6366f1;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Botões premium */
+    .btn-premium {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        padding: 0.75rem 2rem;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+            color: white;
+        }
+
+    /* Cards de benefícios */
+    .benefit-card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+        .benefit-card:hover {
+            border-color: rgba(99, 102, 241, 0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+    /* Botões com hover lift */
+    .btn-hover-lift {
+        transition: all 0.3s ease;
+    }
+
+        .btn-hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+    /* Animações simples usando opacity e transform */
+    .fade-in {
+        opacity: 0;
+        animation: simpleFadeIn 0.6s ease-out forwards;
+    }
+
+    .fade-in-delay-1 {
+        opacity: 0;
+        animation: simpleFadeIn 0.6s ease-out 0.1s forwards;
+    }
+
+    .fade-in-delay-2 {
+        opacity: 0;
+        animation: simpleFadeIn 0.6s ease-out 0.2s forwards;
+    }
+
+    .fade-in-delay-3 {
+        opacity: 0;
+        animation: simpleFadeIn 0.6s ease-out 0.3s forwards;
+    }
+
+    .fade-in-delay-4 {
+        opacity: 0;
+        animation: simpleFadeIn 0.6s ease-out 0.4s forwards;
+    }
+
+    .fade-in-delay-5 {
+        opacity: 0;
+        animation: simpleFadeIn 0.6s ease-out 0.5s forwards;
+    }
+
+    /* Animação simplificada */
+    @@keyframes simpleFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Estilos para estatísticas */
+    .stat-number {
+        font-weight: 800;
+        font-size: 2.5rem;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Alertas personalizados */
+    .custom-alert {
+        border-left: 4px solid;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .custom-alert-primary {
+        border-left-color: #6366f1;
+        background-color: rgba(99, 102, 241, 0.05);
+    }
+
+    .custom-alert-success {
+        border-left-color: #10b981;
+        background-color: rgba(16, 185, 129, 0.05);
+    }
+
+    .custom-alert-warning {
+        border-left-color: #f59e0b;
+        background-color: rgba(245, 158, 11, 0.05);
+    }
+
+    /* Ícones circulares */
+    .circle-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .circle-icon-primary {
+        background-color: rgba(99, 102, 241, 0.1);
+        color: #6366f1;
+    }
+
+    .circle-icon-success {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+    .circle-icon-warning {
+        background-color: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+    }
+
+    /* Layout específico */
+    .sticky-sidebar {
+        position: sticky;
+        top: 2rem;
+    }
+</style>
+
+<div class="container py-5">
+    <!-- Hero Banner Premium -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card @(Model.IsPremium ? "premium-gradient-success" : "premium-gradient-primary") text-white overflow-hidden border-0 shadow-lg mb-5 fade-in">
+                <div class="position-absolute top-0 end-0 w-50 h-100 d-none d-md-block">
+                    <div class="position-absolute top-0 end-0 w-100 h-100 opacity-25" style="background: radial-gradient(circle at 100% 0%, rgba(255,255,255,0.3) 0%, transparent 70%);"></div>
+                </div>
+                <div class="card-body position-relative p-5">
+                    <div class="row align-items-center">
+                        <div class="col-lg-8">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="premium-badge me-3">
+                                    <i class="bi @(Model.IsPremium ? "bi-gem" : "bi-star") me-2"></i>
+                                    @(Model.IsPremium ? "PREMIUM MEMBER" : "PREMIUM")
+                                </div>
+                                @if (Model.IsPremium) {
+                                    <span class="badge bg-white text-dark">
+                                        <i class="bi bi-clock-history me-1"></i>
+                                        Desde @Model.PremiumSince?.ToString("MMMM yyyy")
+                                    </span>
+                                }
+                            </div>
+
+                            <h1 class="display-5 fw-bold mb-4">
+                                @(Model.IsPremium ? "Bem-vindo à Experiência Premium" : "Eleve seu Potencial ao Próximo Nível")
+                            </h1>
+
+                            <p class="lead mb-4 opacity-90">
+                                @if (Model.IsPremium) {
+                                    <span>Você está aproveitando todos os benefícios exclusivos para maximizar seus resultados na plataforma.</span>
+                                } else {
+                                    <span>Desbloqueie ferramentas avançadas, maior visibilidade e suporte prioritário para acelerar seu crescimento.</span>
+                                }
+                            </p>
+
+                            <div class="d-flex flex-wrap gap-3 mt-4">
+                                @if (!Model.IsPremium) {
+                                    <a asp-controller="Premium" asp-action="Benefits" class="btn btn-premium btn-lg">
+                                        <i class="bi bi-rocket-takeoff me-2"></i>Descobrir Benefícios
+                                    </a>
+                                    <a asp-controller="Premium" asp-action="Upgrade" class="btn btn-outline-light btn-lg">
+                                        <i class="bi bi-lightning-charge me-2"></i>Começar Agora
+                                    </a>
+                                } else {
+                                    <a asp-controller="Premium" asp-action="Manage" class="btn btn-outline-light btn-lg">
+                                        <i class="bi bi-gear me-2"></i>Gerir Assinatura
+                                    </a>
+                                    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-light btn-lg">
+                                        <i class="bi bi-speedometer2 me-2"></i>Ir para Dashboard
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-lg-4 text-center mt-4 mt-lg-0">
+                            <div class="position-relative">
+                                <i class="bi @(Model.IsPremium ? "bi-gem" : "bi-crown") display-1 opacity-50"></i>
+                                <div class="position-absolute top-50 start-50 translate-middle">
+                                    <i class="bi @(Model.IsPremium ? "bi-patch-check-fill" : "bi-star-fill") display-3 text-warning"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.IsPremium) {
+        <!-- Dashboard do Membro Premium -->
+        <div class="row g-4 mb-5">
+            <!-- Estatísticas em Destaque -->
+            <div class="col-lg-8">
+                <div class="card glass-card border-0 shadow-sm mb-4 fade-in-delay-1">
+                    <div class="card-header bg-transparent border-0 py-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h3 class="mb-0 fw-bold gradient-text">
+                                <i class="bi bi-graph-up-arrow me-2"></i>Seu Desempenho Premium
+                            </h3>
+                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
+                                <i class="bi bi-trophy me-1"></i>Top Performer
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-3 col-6">
+                                <div class="stat-card stat-card-primary p-3 text-center hover-lift">
+                                    <div class="stat-number text-primary mb-2">@Model.Statistics.TotalServices</div>
+                                    <div class="text-muted small">Serviços Totais</div>
+                                    <div class="mt-2">
+                                        <i class="bi bi-briefcase text-primary opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="stat-card stat-card-success p-3 text-center hover-lift">
+                                    <div class="stat-number text-success mb-2">@Model.Statistics.CompletedServices</div>
+                                    <div class="text-muted small">Concluídos</div>
+                                    <div class="mt-2">
+                                        <i class="bi bi-check-circle text-success opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="stat-card stat-card-info p-3 text-center hover-lift">
+                                    <div class="stat-number text-info mb-2">@Model.Statistics.CompletionRate%</div>
+                                    <div class="text-muted small">Taxa de Conclusão</div>
+                                    <div class="mt-2">
+                                        <i class="bi bi-percent text-info opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="stat-card stat-card-warning p-3 text-center hover-lift">
+                                    <div class="stat-number text-warning mb-2">€@Model.Statistics.EstimatedEarnings.ToString("F2")</div>
+                                    <div class="text-muted small">Ganhos Estimados</div>
+                                    <div class="mt-2">
+                                        <i class="bi bi-currency-euro text-warning opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>Dados atualizados em tempo real
+                                </small>
+                                <a href="#" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-arrow-right me-1"></i>Ver Análises Detalhadas
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Benefícios em Uso -->
+                <div class="card glass-card border-0 shadow-sm fade-in-delay-2">
+                    <div class="card-header bg-transparent border-0 py-4">
+                        <h3 class="mb-0 fw-bold gradient-text">
+                            <i class="bi bi-award me-2"></i>Seus Benefícios Ativos
+                        </h3>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            @foreach (var benefit in Model.PremiumBenefits.Take(4)) {
+                                var colorClass = benefit.Color switch {
+                                                "primary" => "border-primary border-opacity-25",
+                                                "success" => "border-success border-opacity-25",
+                                                "warning" => "border-warning border-opacity-25",
+                                                "danger" => "border-danger border-opacity-25",
+                                                "info" => "border-info border-opacity-25",
+                                    _ => "border-secondary border-opacity-25"
+                                };
+
+                                var textColor = benefit.Color switch {
+                                                "primary" => "text-primary",
+                                                "success" => "text-success",
+                                                "warning" => "text-warning",
+                                                "danger" => "text-danger",
+                                                "info" => "text-info",
+                                    _ => "text-secondary"
+                                };
+
+                                var bgColor = benefit.Color switch {
+                                                "primary" => "bg-primary bg-opacity-10",
+                                                "success" => "bg-success bg-opacity-10",
+                                                "warning" => "bg-warning bg-opacity-10",
+                                                "danger" => "bg-danger bg-opacity-10",
+                                                "info" => "bg-info bg-opacity-10",
+                                    _ => "bg-secondary bg-opacity-10"
+                                };
+
+                                <div class="col-md-6">
+                                    <div class="benefit-card border p-4 hover-lift h-100 @colorClass">
+                                        <div class="d-flex align-items-start">
+                                            <div class="flex-shrink-0">
+                                                <div class="circle-icon @bgColor @textColor">
+                                                    <i class="bi @benefit.Icon"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <h5 class="fw-bold mb-2">@benefit.Title</h5>
+                                                <p class="text-muted mb-0 small">@benefit.Description</p>
+                                                <div class="mt-3">
+                                                    <span class="badge @bgColor @textColor">
+                                                        <i class="bi bi-check-circle me-1"></i>Ativo
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar Premium -->
+            <div class="col-lg-4">
+                <!-- Perfil Verificado -->
+                <div class="card glass-card-dark text-white border-0 shadow-lg mb-4 fade-in-delay-3">
+                    <div class="card-body p-4 text-center">
+                        <div class="position-relative d-inline-block mb-3">
+                            <div class="circle-icon bg-warning bg-opacity-25 text-warning">
+                                <i class="bi bi-patch-check-fill"></i>
+                            </div>
+                            <div class="position-absolute bottom-0 end-0">
+                                <span class="badge bg-warning text-dark rounded-circle px-1 py-1">
+                                    <i class="bi bi-shield-check"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <h4 class="fw-bold mb-2">Perfil Verificado</h4>
+                        <p class="opacity-75 mb-0">Selo de confiança ativo em seu perfil</p>
+                        <div class="mt-3">
+                            <span class="badge bg-white text-dark px-3 py-2">
+                                <i class="bi bi-eye me-1"></i>+85% de visibilidade
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ações Rápidas -->
+                <div class="card glass-card border-0 shadow-sm mb-4 fade-in-delay-4">
+                    <div class="card-header bg-transparent border-0 py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-lightning-charge text-warning me-2"></i>Ações Rápidas
+                        </h5>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="d-grid gap-2">
+                            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-primary btn-hover-lift text-start py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="bi bi-speedometer2 fs-5"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div class="fw-bold">Dashboard</div>
+                                        <small class="text-muted">Acompanhe seu desempenho</small>
+                                    </div>
+                                </div>
+                            </a>
+                            <a asp-controller="Account" asp-action="Profile" class="btn btn-outline-success btn-hover-lift text-start py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="bi bi-pencil-square fs-5"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div class="fw-bold">Editar Perfil</div>
+                                        <small class="text-muted">Otimize sua apresentação</small>
+                                    </div>
+                                </div>
+                            </a>
+                            <a asp-controller="Premium" asp-action="Manage" class="btn btn-outline-warning btn-hover-lift text-start py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="bi bi-credit-card fs-5"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div class="fw-bold">Gerir Assinatura</div>
+                                        <small class="text-muted">Configurações de pagamento</small>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Insights Premium -->
+                <div class="card glass-card border-0 shadow-sm fade-in-delay-5">
+                    <div class="card-header bg-transparent border-0 py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-lightbulb text-info me-2"></i>Insights Premium
+                        </h5>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="custom-alert custom-alert-primary">
+                            <div class="d-flex">
+                                <i class="bi bi-info-circle text-primary fs-5 me-3"></i>
+                                <div>
+                                    <div class="fw-bold">Dica Profissional</div>
+                                    <small>Complete seu portfólio com projetos recentes para aumentar em 40% suas propostas.</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="custom-alert custom-alert-success mt-2">
+                            <div class="d-flex">
+                                <i class="bi bi-check-circle text-success fs-5 me-3"></i>
+                                <div>
+                                    <div class="fw-bold">Boa Prática</div>
+                                    <small>Responda às mensagens em até 2 horas para melhorar sua taxa de conversão.</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="custom-alert custom-alert-warning mt-2">
+                            <div class="d-flex">
+                                <i class="bi bi-graph-up text-warning fs-5 me-3"></i>
+                                <div>
+                                    <div class="fw-bold">Oportunidade</div>
+                                    <small>Perfis com avaliações acima de 4.5 recebem 3x mais solicitações.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    } else {
+        <!-- Visão Não Premium -->
+        <div class="row g-4">
+            <!-- Benefícios em Destaque -->
+            <div class="col-lg-8">
+                <div class="card glass-card border-0 shadow-sm mb-4 fade-in-delay-1">
+                    <div class="card-header bg-transparent border-0 py-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h3 class="mb-0 fw-bold gradient-text">
+                                <i class="bi bi-award me-2"></i>Por que Escolher Premium?
+                            </h3>
+                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
+                                <i class="bi bi-arrow-up-right-circle me-1"></i>+85% de Resultados
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-4">
+                            @foreach (var benefit in Model.PremiumBenefits) {
+                                var benefitColor = benefit.Color switch {
+                                                "primary" => "primary",
+                                                "success" => "success",
+                                                "warning" => "warning",
+                                                "danger" => "danger",
+                                                "info" => "info",
+                                    _ => "secondary"
+                                };
+
+                                var textColorClass = $"text-{benefitColor}";
+                                var bgColorClass = $"bg-{benefitColor} bg-opacity-10";
+
+                                <div class="col-md-6">
+                                    <div class="benefit-card border p-4 hover-lift h-100">
+                                        <div class="d-flex align-items-start">
+                                            <div class="flex-shrink-0">
+                                                <div class="circle-icon @bgColorClass @textColorClass">
+                                                    <i class="bi @benefit.Icon"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <h5 class="fw-bold mb-2">@benefit.Title</h5>
+                                                <p class="text-muted mb-3 small">@benefit.Description</p>
+                                                <div class="mt-2">
+                                                    <span class="badge @bgColorClass @textColorClass">
+                                                        <i class="bi bi-check-circle me-1"></i>Exclusivo Premium
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparação de Resultados -->
+                <div class="card glass-card border-0 shadow-sm fade-in-delay-2">
+                    <div class="card-header bg-transparent border-0 py-4">
+                        <h4 class="mb-0 fw-bold gradient-text">
+                            <i class="bi bi-bar-chart me-2"></i>Compare os Resultados
+                        </h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row text-center">
+                            <div class="col-md-6 mb-4">
+                                <div class="p-4 rounded-3" style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);">
+                                    <h5 class="text-muted mb-3">Básico</h5>
+                                    <div class="display-6 fw-bold text-gray-600 mb-2">€0</div>
+                                    <div class="text-muted small mb-4">/mês</div>
+                                    <div class="text-start">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="bi bi-check text-success me-2"></i>
+                                            <small>Perfil básico</small>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="bi bi-check text-success me-2"></i>
+                                            <small>5 propostas/mês</small>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="bi bi-x text-danger me-2"></i>
+                                            <small class="text-muted">Sem destaque</small>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="bi bi-x text-danger me-2"></i>
+                                            <small class="text-muted">Estatísticas limitadas</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <div class="p-4 rounded-3 premium-gradient-primary text-white">
+                                    <h5 class="mb-3">Premium</h5>
+                                    <div class="display-6 fw-bold mb-2">€9,99</div>
+                                    <div class="small opacity-90 mb-4">/mês</div>
+                                    <div class="text-start">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="bi bi-check me-2"></i>
+                                            <small>Perfil destacado</small>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="bi bi-check me-2"></i>
+                                            <small>Propostas ilimitadas</small>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="bi bi-check me-2"></i>
+                                            <small>Destaque nas buscas</small>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="bi bi-check me-2"></i>
+                                            <small>Estatísticas avançadas</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA de Upgrade -->
+            <div class="col-lg-4">
+                <div class="sticky-sidebar">
+                    <div class="card glass-card-dark text-white border-0 shadow-lg mb-4 fade-in-delay-3">
+                        <div class="card-body p-5 text-center">
+                            <div class="position-relative mb-4">
+                                <i class="bi bi-rocket-takeoff display-1 opacity-25"></i>
+                                <div class="position-absolute top-50 start-50 translate-middle">
+                                    <i class="bi bi-lightning-charge-fill display-3 text-warning"></i>
+                                </div>
+                            </div>
+
+                            <h2 class="fw-bold mb-3">Pronto para Decolar?</h2>
+                            <p class="lead opacity-90 mb-4">Junte-se a milhares de profissionais que já transformaram seus resultados</p>
+
+                            <div class="mb-4">
+                                <div class="display-3 fw-bold text-warning mb-1">€9,99</div>
+                                <div class="text-white-50">por mês • Cancelamento a qualquer momento</div>
+                            </div>
+
+                            <div class="d-grid gap-3 mb-4">
+                                <a asp-controller="Premium" asp-action="Upgrade" class="btn btn-warning btn-lg py-3 fw-bold">
+                                    <i class="bi bi-lightning-charge me-2"></i>Começar Agora
+                                </a>
+                                <a asp-controller="Premium" asp-action="Benefits" class="btn btn-outline-light btn-lg">
+                                    <i class="bi bi-list-check me-2"></i>Ver Todos os Benefícios
+                                </a>
+                            </div>
+
+                            <div class="mt-4 pt-3 border-top border-white-10">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <div class="text-white-50 small">Garantia</div>
+                                        <div class="fw-bold">30 dias</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="text-white-50 small">Suporte</div>
+                                        <div class="fw-bold">24/7</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="text-white-50 small">Segurança</div>
+                                        <div class="fw-bold">100%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Depoimento Rápido -->
+                    <div class="card glass-card border-0 shadow-sm fade-in-delay-4">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="flex-shrink-0">
+                                    <div class="circle-icon bg-primary bg-opacity-10 text-primary">
+                                        <i class="bi bi-chat-square-quote"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-0 fw-bold">Depoimento</h6>
+                                    <small class="text-muted">Carlos Silva, Designer</small>
+                                </div>
+                            </div>
+                            <p class="fst-italic text-muted mb-0">
+                                "Com o Premium, tripliquei meus clientes em apenas 2 meses. O melhor investimento da minha carreira!"
+                            </p>
+                            <div class="mt-2">
+                                <i class="bi bi-star-fill text-warning"></i>
+                                <i class="bi bi-star-fill text-warning"></i>
+                                <i class="bi bi-star-fill text-warning"></i>
+                                <i class="bi bi-star-fill text-warning"></i>
+                                <i class="bi bi-star-fill text-warning"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<script>
+    // Contadores animados
+    document.addEventListener('DOMContentLoaded', function() {
+        const counters = document.querySelectorAll('.stat-number');
+        counters.forEach(counter => {
+            const text = counter.textContent;
+            const target = parseFloat(text.replace(/[^\d.]/g, ''));
+
+            if (!isNaN(target)) {
+                let current = 0;
+                const increment = target / 50;
+                const duration = 1000; // 1 segundo
+                const steps = 50;
+                const stepDuration = duration / steps;
+
+                const updateCounter = () => {
+                    if (current < target) {
+                        current += increment;
+                        if (text.includes('€')) {
+                            counter.textContent = '€' + Math.ceil(current).toFixed(2);
+                        } else if (text.includes('%')) {
+                            counter.textContent = Math.ceil(current) + '%';
+                        } else {
+                            counter.textContent = Math.ceil(current);
+                        }
+                        setTimeout(updateCounter, stepDuration);
+                    } else {
+                        if (text.includes('€')) {
+                            counter.textContent = '€' + target.toFixed(2);
+                        } else if (text.includes('%')) {
+                            counter.textContent = target + '%';
+                        } else {
+                            counter.textContent = target;
+                        }
+                    }
+                };
+
+                // Inicia quando visível
+                const observer = new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting) {
+                        updateCounter();
+                        observer.unobserve(counter);
+                    }
+                }, { threshold: 0.5 });
+
+                observer.observe(counter);
+            }
+        });
+
+        // Efeito hover
+        const hoverElements = document.querySelectorAll('.hover-lift');
+        hoverElements.forEach(element => {
+            element.addEventListener('mouseenter', function() {
+                this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            });
+        });
+
+        // Remove classes de animação após carregar
+        setTimeout(() => {
+            const animatedElements = document.querySelectorAll('.fade-in, .fade-in-delay-1, .fade-in-delay-2, .fade-in-delay-3, .fade-in-delay-4, .fade-in-delay-5');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            });
+        }, 1000);
+    });
+</script>

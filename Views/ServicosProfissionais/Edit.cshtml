@@ -1,0 +1,46 @@
+﻿@model EDSG.Models.EditarServicoViewModel
+@{
+    ViewData["Title"] = "Editar Serviço";
+}
+
+<div class="container">
+    <h1>Editar Serviço</h1>
+
+    @using (Html.BeginForm("Edit", "ServicosProfissionais", FormMethod.Post)) {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.Id)
+
+        <div class="mb-3">
+            @Html.LabelFor(m => m.Titulo)
+            @Html.TextBoxFor(m => m.Titulo, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.Titulo, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="mb-3">
+            @Html.LabelFor(m => m.Descricao)
+            @Html.TextAreaFor(m => m.Descricao, new { @class = "form-control", rows = 5 })
+            @Html.ValidationMessageFor(m => m.Descricao, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="mb-3">
+            @Html.LabelFor(m => m.Categoria)
+            @Html.TextBoxFor(m => m.Categoria, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.Categoria, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="mb-3">
+            @Html.LabelFor(m => m.Localizacao)
+            @Html.TextBoxFor(m => m.Localizacao, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.Localizacao, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="mb-3">
+            @Html.LabelFor(m => m.PrecoAcordado)
+            @Html.TextBoxFor(m => m.PrecoAcordado, new { @class = "form-control", type = "number", step = "0.01" })
+            @Html.ValidationMessageFor(m => m.PrecoAcordado, "", new { @class = "text-danger" })
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar Alterações</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    }
+</div>

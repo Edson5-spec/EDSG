@@ -1,0 +1,64 @@
+﻿@model EDSG.Controllers.ServicosProfissionaisController.ServicoProfissionalViewModel
+@{
+    ViewData["Title"] = "Adicionar Novo Serviço";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Criar Serviço</h5>
+                </div>
+                <div class="card-body">
+
+                    @* Mostrar mensagem de sucesso, caso exista *@
+                    @if (TempData["SuccessMessage"] != null) {
+                        <div class="alert alert-success">
+                            @TempData["SuccessMessage"]
+                        </div>
+                    }
+
+                    @using (Html.BeginForm("Create", "ServicosProfissionais", FormMethod.Post, new { @class = "needs-validation", novalidate = "novalidate" })) {
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            @Html.LabelFor(m => m.Nome)
+                            @Html.TextBoxFor(m => m.Nome, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.Nome, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="mb-3">
+                            @Html.LabelFor(m => m.Descricao)
+                            @Html.TextAreaFor(m => m.Descricao, new { @class = "form-control", rows = 5 })
+                            @Html.ValidationMessageFor(m => m.Descricao, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="mb-3">
+                            @Html.LabelFor(m => m.Categoria)
+                            @Html.TextBoxFor(m => m.Categoria, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.Categoria, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="mb-3">
+                            @Html.LabelFor(m => m.Preco)
+                            @Html.TextBoxFor(m => m.Preco, new { @class = "form-control", type = "number", step = "0.01" })
+                            @Html.ValidationMessageFor(m => m.Preco, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="mb-3">
+                            @Html.LabelFor(m => m.TempoEstimado)
+                            @Html.TextBoxFor(m => m.TempoEstimado, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.TempoEstimado, "", new { @class = "text-danger" })
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Criar Serviço
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

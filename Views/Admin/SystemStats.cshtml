@@ -1,0 +1,520 @@
+﻿@model EDSG.Controllers.SystemStatsViewModel
+@{
+    ViewData["Title"] = "Estatísticas do Sistema";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3 mb-2">
+                <i class="bi bi-graph-up text-primary me-2"></i>Estatísticas do Sistema
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Estatísticas</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-auto">
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown">
+                    <i class="bi bi-calendar-range me-1"></i> Período: Este Mês
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" onclick="changePeriod('today')">Hoje</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="changePeriod('week')">Esta Semana</a></li>
+                    <li><a class="dropdown-item active" href="#" onclick="changePeriod('month')">Este Mês</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="changePeriod('quarter')">Este Trimestre</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="changePeriod('year')">Este Ano</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="changePeriod('all')">Todo o Período</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-primary border-4 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">
+                                Utilizadores Totais
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">@Model.TotalUsers</div>
+                            <div class="mt-2">
+                                <span class="text-success small fw-bold">
+                                    <i class="bi bi-arrow-up me-1"></i>@Model.NewUsersThisMonth este mês
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-people-fill text-primary fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-success border-4 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-success text-uppercase mb-1">
+                                Receita Total
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">€@Model.TotalRevenue.ToString("F2")</div>
+                            <div class="mt-2">
+                                <span class="text-success small fw-bold">
+                                    <i class="bi bi-currency-euro me-1"></i>€@Model.RevenueThisMonth.ToString("F2") este mês
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-cash-stack text-success fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-warning border-4 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-warning text-uppercase mb-1">
+                                Avaliação Média
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">@Model.AverageRating.ToString("F1")/5</div>
+                            <div class="mt-2">
+                                <span class="text-muted small">
+                                    <i class="bi bi-star-fill me-1"></i>@Model.TotalRatings avaliações
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-star-fill text-warning fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-info border-4 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-info text-uppercase mb-1">
+                                Serviços Ativos
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">@Model.ActiveUsers</div>
+                            <div class="mt-2">
+                                <span class="text-info small fw-bold">
+                                    <i class="bi bi-briefcase me-1"></i>@Model.ServicesThisMonth este mês
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-briefcase-fill text-info fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Revenue Chart -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up-arrow text-success me-2"></i>Receita Mensal
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Growth -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people-fill text-primary me-2"></i>Crescimento de Utilizadores
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="userGrowthChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Distribution -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pie-chart-fill text-info me-2"></i>Distribuição por Categoria
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">Profissionais por Categoria</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Categoria</th>
+                                            <th class="text-end">Profissionais</th>
+                                            <th class="text-end">Preço Médio</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var stat in Model.CategoryStats) {
+                                            <tr>
+                                                <td>
+                                                    <span class="badge bg-info">@stat.Category</span>
+                                                </td>
+                                                <td class="text-end fw-bold">@stat.Count</td>
+                                                <td class="text-end text-success">€@stat.AveragePrice.ToString("F2")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">Serviços por Categoria</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Categoria</th>
+                                            <th class="text-end">Serviços</th>
+                                            <th class="text-end">Preço Médio</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var stat in Model.ServicosProfissionaisPorCategoria) {
+                                            <tr>
+                                                <td>
+                                                    <span class="badge bg-success">@stat.Category</span>
+                                                </td>
+                                                <td class="text-end fw-bold">@stat.Count</td>
+                                                <td class="text-end text-primary">€@stat.AveragePrice.ToString("F2")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Platform Stats -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-speedometer2 text-danger me-2"></i>Estatísticas da Plataforma
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <div>
+                                <i class="bi bi-person-badge text-primary me-2"></i>
+                                <span>Utilizadores Premium</span>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">@Model.PremiumUsers</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <div>
+                                <i class="bi bi-briefcase text-success me-2"></i>
+                                <span>Profissionais</span>
+                            </div>
+                            <span class="badge bg-success rounded-pill">@Model.Professionals</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <div>
+                                <i class="bi bi-shop text-info me-2"></i>
+                                <span>Serviços Profissionais</span>
+                            </div>
+                            <span class="badge bg-info rounded-pill">@Model.TotalServicosProfissionais</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <div>
+                                <i class="bi bi-images text-warning me-2"></i>
+                                <span>Itens de Portfólio</span>
+                            </div>
+                            <span class="badge bg-warning rounded-pill">@Model.TotalPortfolioItems</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <div>
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                <span>Serviços Concluídos</span>
+                            </div>
+                            <span class="badge bg-success rounded-pill">0</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <div>
+                                <i class="bi bi-currency-euro text-danger me-2"></i>
+                                <span>Preço Médio Serviço</span>
+                            </div>
+                            <span class="badge bg-danger rounded-pill">€@Model.AverageServicePrice.ToString("F2")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-activity text-primary me-2"></i>Atividade Recente
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <small class="text-muted">Há 5 minutos</small>
+                                <p class="mb-0">Novo serviço criado: "Design de Logo"</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <small class="text-muted">Há 15 minutos</small>
+                                <p class="mb-0">Novo utilizador registado: João Silva</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-content">
+                                <small class="text-muted">Há 30 minutos</small>
+                                <p class="mb-0">Nova denúncia recebida</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-info"></div>
+                            <div class="timeline-content">
+                                <small class="text-muted">Há 1 hora</small>
+                                <p class="mb-0">Serviço concluído: #1234</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-danger"></div>
+                            <div class="timeline-content">
+                                <small class="text-muted">Há 2 horas</small>
+                                <p class="mb-0">Utilizador suspenso: user@example.com</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Metrics -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bar-chart-fill text-info me-2"></i>Métricas de Performance
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Taxa de Conversão</span>
+                            <span class="fw-bold text-success">24%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: 24%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Satisfação do Cliente</span>
+                            <span class="fw-bold text-primary">92%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-primary" style="width: 92%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Tempo de Resposta</span>
+                            <span class="fw-bold text-info">2.4h</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-info" style="width: 80%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Crescimento Mensal</span>
+                            <span class="fw-bold text-warning">+15%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-warning" style="width: 65%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(function () {
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            const revenueChart = new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                    datasets: [{
+                        label: 'Receita (€)',
+                        data: [1200, 1900, 1500, 2500, 2200, 3000, 2800, 3200, 2900, 3500, 4000, 3800],
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '€' + value;
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // User Growth Chart
+            const userGrowthCtx = document.getElementById('userGrowthChart').getContext('2d');
+            const userGrowthChart = new Chart(userGrowthCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                    datasets: [{
+                        label: 'Novos Utilizadores',
+                        data: [45, 60, 75, 55, 80, 90, 110, 95, 120, 130, 140, 150],
+                        backgroundColor: 'rgba(0, 123, 255, 0.8)',
+                        borderColor: '#007bff',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false
+                            },
+                            ticks: {
+                                stepSize: 25
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        function changePeriod(period) {
+            // Implementar lógica de mudança de período
+            console.log('Período alterado para:', period);
+            // Aqui você faria uma requisição AJAX para atualizar as estatísticas
+        }
+    </script>
+
+    <style>
+        .timeline {
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+            .timeline-item:last-child {
+                padding-bottom: 0;
+            }
+
+        .timeline-marker {
+            position: absolute;
+            left: -30px;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--bs-border-color);
+        }
+
+        .timeline-content {
+            padding-left: 10px;
+        }
+
+        .progress {
+            border-radius: 10px;
+        }
+
+        .progress-bar {
+            border-radius: 10px;
+        }
+    </style>
+}

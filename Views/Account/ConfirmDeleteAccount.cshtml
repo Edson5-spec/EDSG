@@ -1,0 +1,106 @@
+﻿@model EDSG.Controllers.DeleteAccountViewModel
+@{
+    ViewData["Title"] = "Eliminar Conta";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="bi bi-exclamation-triangle"></i> @ViewData["Title"]</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-controller="Account" asp-action="ConfirmDeleteAccount" method="post" id="deleteAccountForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-octagon-fill"></i>
+                            <strong>Atenção:</strong> Esta ação é irreversível e não pode ser desfeita!
+                        </div>
+
+                        <p class="mb-4">
+                            Ao eliminar sua conta, você perderá permanentemente:
+                        </p>
+                        <ul class="mb-4">
+                            <li>Todos os seus dados pessoais</li>
+                            <li>Histórico de serviços</li>
+                            <li>Avaliações recebidas</li>
+                            <li>Mensagens e conversas</li>
+                            <li>Configurações e preferências</li>
+                        </ul>
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input asp-for="Confirmation" class="form-check-input" type="checkbox" />
+                                <label asp-for="Confirmation" class="form-check-label">
+                                    Compreendo que esta ação é permanente e não pode ser desfeita.
+                                </label>
+                                <span asp-validation-for="Confirmation" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Password" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="Password" class="form-control" type="password" />
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('Password', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                            <div class="form-text">
+                                Digite sua palavra-passe atual para confirmar a eliminação.
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                            <a asp-controller="Account" asp-action="Profile" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger" id="submitBtn">
+                                <i class="bi bi-trash"></i> Eliminar Conta Permanentemente
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        // Toggle password visibility
+        function togglePassword(inputId, button) {
+            const input = document.getElementById(inputId);
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+            button.innerHTML = type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+        }
+
+        // Form submission confirmation
+        const form = document.getElementById('deleteAccountForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', function(e) {
+            if (!confirm('Tem CERTEZA ABSOLUTA que deseja eliminar permanentemente sua conta? Esta ação NÃO pode ser desfeita!')) {
+                e.preventDefault();
+                return;
+            }
+
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> A eliminar...';
+            
+            // Resetar após 10 segundos se houver erro
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }, 10000);
+        });
+    </script>
+}

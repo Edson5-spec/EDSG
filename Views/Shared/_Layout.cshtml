@@ -1,0 +1,2456 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using EDSG.Models
+@using System.Security.Claims
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+    var user = await UserManager.GetUserAsync(User);
+    var currentCulture = System.Globalization.CultureInfo.CurrentCulture.Name;
+    var isPortuguese = currentCulture.StartsWith("pt");
+    var modo = HttpContextAccessor.HttpContext?.Session.GetString("DashboardMode") ?? "Cliente";
+    var isProfissional = modo == "Profissional";
+    var unreadCount = 0;
+
+    if (User.Identity.IsAuthenticated) {
+        var userId = UserManager.GetUserId(User);
+        // A contagem será carregada via JavaScript
+    }
+}
+<!DOCTYPE html>
+<html lang="@currentCulture" data-theme="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - EDSG</title>
+
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" id="main-stylesheet">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="~/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="icon" href="~/favicon.ico" type="image/x-icon">
+                @await RenderSectionAsync("Styles", required: false)
+    <style>
+        /* ========== VARIÁVEIS CSS (CSS Custom Properties) - MELHORADO ========== */
+        :root {
+            /* Cores Light Theme (Padrão) - CONTRASTE MELHORADO */
+            --color-bg-primary: #ffffff;
+            --color-bg-secondary: #f8fafc;
+            --color-bg-tertiary: #f1f5f9;
+            --color-bg-surface: #ffffff;
+            --color-bg-inverse: #1e293b;
+            /* Texto com maior contraste */
+            --color-text-primary: #0f172a;
+            --color-text-secondary: #334155;
+            --color-text-tertiary: #64748b;
+            --color-text-inverse: #ffffff;
+            --color-border: #e2e8f0;
+            --color-border-light: #f1f5f9;
+            --color-border-dark: #cbd5e1;
+            --color-primary: #2563eb;
+            --color-primary-light: #3b82f6;
+            --color-primary-dark: #1d4ed8;
+            --color-primary-rgb: 37, 99, 235;
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --color-danger: #ef4444;
+            --color-info: #06b6d4;
+            --color-shadow: rgba(0, 0, 0, 0.08);
+            --color-shadow-dark: rgba(0, 0, 0, 0.12);
+            --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-family-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-family-mono: 'SF Mono', 'Roboto Mono', Consolas, monospace;
+            /* Border radius ajustado */
+            --border-radius-sm: 6px;
+            --border-radius: 8px;
+            --border-radius-lg: 12px;
+            --border-radius-xl: 16px;
+            --border-radius-2xl: 20px;
+            --border-radius-circle: 50%;
+            /* Shadows mais suaves */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+            --shadow-xl: 0 12px 36px rgba(0, 0, 0, 0.15);
+            /* Transições suaves */
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+            /* Dimensões ajustadas */
+            --header-height: 64px;
+            --sidebar-width: 280px;
+            --max-content-width: 1600px;
+        }
+
+        /* ========== DARK THEME - CONTRASTE MELHORADO ========== */
+        [data-theme="dark"] {
+            --color-bg-primary: #0f172a;
+            --color-bg-secondary: #1e293b;
+            --color-bg-tertiary: #334155;
+            --color-bg-surface: #1e293b;
+            --color-bg-inverse: #0f172a;
+            /* Texto mais claro para melhor contraste no dark */
+            --color-text-primary: #f1f5f9;
+            --color-text-secondary: #cbd5e1;
+            --color-text-tertiary: #94a3b8;
+            --color-text-inverse: #ffffff;
+            --color-border: #475569;
+            --color-border-light: #334155;
+            --color-border-dark: #64748b;
+            --color-primary: #60a5fa;
+            --color-primary-light: #93c5fd;
+            --color-primary-dark: #3b82f6;
+            --color-primary-rgb: 96, 165, 250;
+            --color-success: #34d399;
+            --color-warning: #fbbf24;
+            --color-danger: #f87171;
+            --color-info: #22d3ee;
+            --color-shadow: rgba(0, 0, 0, 0.3);
+            --color-shadow-dark: rgba(0, 0, 0, 0.4);
+        }
+
+        /* ========== BASE STYLES ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: var(--font-family-base);
+            font-weight: 400;
+            line-height: 1.6;
+            color: var(--color-text-primary);
+            background-color: var(--color-bg-primary);
+            min-height: 100vh;
+            padding-top: var(--header-height);
+            transition: background-color var(--transition), color var(--transition);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ========== TYPOGRAPHY MELHORADO ========== */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-family-heading);
+            font-weight: 600;
+            line-height: 1.3;
+            color: var(--color-text-primary);
+            margin-bottom: 1.25rem;
+            letter-spacing: -0.01em;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+        }
+
+        h4 {
+            font-size: 1.25rem;
+        }
+
+        h5 {
+            font-size: 1.1rem;
+        }
+
+        h6 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--color-text-secondary);
+            line-height: 1.7;
+        }
+
+        strong, b {
+            color: var(--color-text-primary);
+            font-weight: 600;
+        }
+
+        a {
+            color: var(--color-primary);
+            text-decoration: none;
+            transition: all var(--transition-fast);
+            font-weight: 500;
+        }
+
+            a:hover {
+                color: var(--color-primary-dark);
+                text-decoration: underline;
+            }
+
+        .text-gradient {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        /* ========== LAYOUT MELHORADO ========== */
+        .container {
+            width: 100%;
+            max-width: var(--max-content-width);
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .container-fluid {
+            width: 100%;
+            padding: 0 2rem;
+        }
+
+        .container-narrow {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .container-wide {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        /* ========== HEADER / NAVBAR MELHORADO ========== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            background: var(--color-bg-inverse) !important;
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--color-border);
+            z-index: 1100;
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition);
+        }
+
+        .navbar-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 100%;
+            width: 100%;
+            gap: 2rem;
+        }
+
+        /* Logo */
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--color-text-inverse);
+            padding: 0.5rem 0;
+        }
+
+        .logo-icon {
+            color: var(--color-primary-light);
+            font-size: 1.75rem;
+            transition: transform var(--transition);
+        }
+
+        .logo-container:hover .logo-icon {
+            transform: scale(1.1);
+        }
+
+        /* Hamburguer Menu */
+        .hamburger-menu {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 24px;
+            height: 18px;
+            cursor: pointer;
+            padding: 2px;
+            background: none;
+            border: none;
+            outline: none;
+        }
+
+        .hamburger-line {
+            width: 100%;
+            height: 2px;
+            background: var(--color-text-inverse);
+            border-radius: 2px;
+            transition: all var(--transition);
+        }
+
+        .hamburger-menu:hover .hamburger-line {
+            background: var(--color-primary-light);
+        }
+
+        /* Main Navigation */
+        .main-nav {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin: 0 2rem;
+        }
+
+        .nav-link {
+            color: var(--color-text-inverse) !important;
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding: 0.5rem 0.75rem !important;
+            border-radius: var(--border-radius);
+            transition: all var(--transition-fast);
+            position: relative;
+            opacity: 0.9;
+        }
+
+            .nav-link:hover {
+                background: rgba(255, 255, 255, 0.1);
+                opacity: 1;
+                transform: translateY(-1px);
+            }
+
+            .nav-link.active {
+                background: rgba(255, 255, 255, 0.15);
+                opacity: 1;
+                font-weight: 600;
+            }
+
+                .nav-link.active::after {
+                    content: '';
+                    position: absolute;
+                    bottom: -1px;
+                    left: 0.75rem;
+                    right: 0.75rem;
+                    height: 2px;
+                    background: var(--color-primary-light);
+                    border-radius: 1px;
+                }
+
+        /* Search Bar - BARRAN BRANCA NO MODO CLARO */
+        .search-container {
+            flex: 1;
+            max-width: 500px;
+            margin: 0 2rem;
+            position: relative;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 0.625rem 1.25rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            color: var(--color-text-inverse);
+            font-size: 0.95rem;
+            transition: all var(--transition);
+            outline: none;
+            font-weight: 400;
+        }
+
+        /* ESTILOS ESPECÍFICOS PARA MODO CLARO - BARRAN BRANCA */
+        [data-theme="light"] .search-bar {
+            background: white;
+            border: 2px solid #e2e8f0;
+            color: #0f172a;
+        }
+
+        .search-bar:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.25);
+        }
+
+        /* Foco específico para modo claro */
+        [data-theme="light"] .search-bar:focus {
+            background: white;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.2);
+        }
+
+        .search-bar::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 400;
+        }
+
+        /* Placeholder específico para modo claro */
+        [data-theme="light"] .search-bar::placeholder {
+            color: #64748b; /* Cor mais escura para melhor contraste */
+        }
+
+        .search-bar:focus::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        [data-theme="light"] .search-bar:focus::placeholder {
+            color: #94a3b8;
+        }
+
+        /* User Menu */
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: var(--border-radius);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--color-text-inverse);
+            cursor: pointer;
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+            .theme-toggle-btn:hover {
+                background: rgba(255, 255, 255, 0.2);
+                transform: rotate(30deg);
+            }
+
+            .theme-toggle-btn i {
+                font-size: 1rem;
+                transition: transform var(--transition);
+            }
+
+        /* Language Selector */
+        .language-selector .dropdown-toggle {
+            color: var(--color-text-inverse);
+            background: none;
+            border: none;
+            padding: 0.375rem 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.875rem;
+        }
+
+        .language-selector .dropdown-menu {
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow);
+            background: var(--color-bg-surface);
+            min-width: 140px;
+        }
+
+        .language-selector .dropdown-item {
+            color: var(--color-text-primary);
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+            .language-selector .dropdown-item:hover {
+                background: var(--color-bg-tertiary);
+            }
+
+        /* User Profile Link */
+        .user-profile-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+
+            .user-profile-link:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary-dark));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        .user-name {
+            color: var(--color-text-inverse);
+            font-size: 0.875rem;
+            font-weight: 500;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .message-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: var(--color-danger);
+            color: white;
+            font-size: 0.625rem;
+            font-weight: 600;
+            padding: 0.125rem 0.375rem;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+            border: 2px solid var(--color-bg-inverse);
+            display: none;
+        }
+
+        /* ========== SIDEBAR ========== */
+        .github-sidebar {
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--header-height));
+            background: var(--color-bg-surface);
+            border-right: 1px solid var(--color-border);
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform var(--transition) cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            padding: 1.5rem 0;
+            box-shadow: 2px 0 8px var(--color-shadow);
+        }
+
+            .github-sidebar.active {
+                transform: translateX(0);
+            }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+            backdrop-filter: blur(4px);
+        }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+        .sidebar-section {
+            padding: 0 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .sidebar-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--color-text-tertiary);
+            margin-bottom: 0.75rem;
+            padding-left: 0.5rem;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 0.75rem;
+            margin: 0.125rem 0;
+            border-radius: var(--border-radius);
+            color: var(--color-text-primary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 400;
+            transition: all var(--transition-fast);
+            cursor: pointer;
+            position: relative;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+            .sidebar-item:hover {
+                background: var(--color-bg-tertiary);
+                color: var(--color-text-primary);
+                transform: translateX(2px);
+            }
+
+            .sidebar-item.active {
+                background: var(--color-primary);
+                color: white;
+                font-weight: 500;
+            }
+
+            .sidebar-item i {
+                width: 20px;
+                margin-right: 0.75rem;
+                font-size: 1rem;
+                opacity: 0.8;
+            }
+
+            .sidebar-item.active i {
+                opacity: 1;
+            }
+
+        .sidebar-badge {
+            margin-left: auto;
+            background: var(--color-primary);
+            color: white;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            padding: 0.125rem 0.375rem;
+            border-radius: 10px;
+            display: none;
+        }
+
+        /* ========== MAIN CONTENT MELHORADO ========== */
+        main {
+            min-height: calc(100vh - var(--header-height));
+            padding: 1.5rem 0;
+            transition: margin-left var(--transition);
+            position: relative;
+            width: 100%;
+            flex: 1;
+        }
+
+        .github-sidebar.active + main {
+            margin-left: var(--sidebar-width);
+        }
+
+        .content-wrapper {
+            animation: fadeIn 0.4s ease-out;
+            max-width: var(--max-content-width);
+            margin: 0 auto;
+            width: 100%;
+            padding: 0 2rem;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Classes utilitárias para layout melhorado */
+        .content-panel {
+            background: var(--color-bg-surface);
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all var(--transition);
+        }
+
+            .content-panel:hover {
+                box-shadow: var(--shadow-md);
+                border-color: var(--color-primary-light);
+            }
+
+        .content-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--color-border-light);
+        }
+
+        .content-body {
+            padding: 1rem 0;
+        }
+
+        .content-footer {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--color-border-light);
+        }
+
+        /* ========== ALERTS ========== */
+        .alert {
+            border-radius: var(--border-radius);
+            border: none;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            animation: slideDown 0.3s ease;
+        }
+
+        @@keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert i {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            border-left: 4px solid var(--color-success);
+            color: #065f46;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            border-left: 4px solid var(--color-danger);
+            color: #991b1b;
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-left: 4px solid var(--color-warning);
+            color: #92400e;
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            border-left: 4px solid var(--color-info);
+            color: #1e40af;
+        }
+
+        .alert-dismissible .btn-close {
+            padding: 0.75rem 1rem;
+            opacity: 0.6;
+            transition: opacity var(--transition-fast);
+        }
+
+            .alert-dismissible .btn-close:hover {
+                opacity: 1;
+            }
+
+        /* ========== CARDS MELHORADOS ========== */
+        .card {
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius-lg);
+            background: var(--color-bg-surface);
+            box-shadow: var(--shadow);
+            transition: all var(--transition);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            width: 100%;
+        }
+
+            .card:hover {
+                box-shadow: var(--shadow-lg);
+                transform: translateY(-4px);
+                border-color: var(--color-primary-light);
+            }
+
+        .card-header {
+            padding: 1rem 1.5rem;
+            background: var(--color-bg-secondary);
+            border-bottom: 1px solid var(--color-border);
+            font-weight: 600;
+            color: var(--color-text-primary);
+            font-size: 1.1rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+            color: var(--color-text-secondary);
+        }
+
+            .card-body p {
+                color: var(--color-text-secondary);
+            }
+
+        .card-footer {
+            padding: 1rem 1.5rem;
+            background: var(--color-bg-secondary);
+            border-top: 1px solid var(--color-border);
+        }
+
+        /* ========== BUTTONS ========== */
+        .btn {
+            font-family: var(--font-family-base);
+            font-weight: 500;
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            border: 1px solid transparent;
+            transition: all var(--transition);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .btn::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 5px;
+                height: 5px;
+                background: rgba(255, 255, 255, 0.5);
+                opacity: 0;
+                border-radius: 100%;
+                transform: scale(1, 1) translate(-50%);
+                transform-origin: 50% 50%;
+            }
+
+            .btn:focus:not(:active)::after {
+                animation: ripple 1s ease-out;
+            }
+
+        @@keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+            color: white;
+            border: none;
+        }
+
+            .btn-primary:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+                color: white;
+            }
+
+        .btn-outline-primary {
+            background: transparent;
+            color: var(--color-primary);
+            border: 2px solid var(--color-primary);
+        }
+
+            .btn-outline-primary:hover {
+                background: var(--color-primary);
+                color: white;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.2);
+            }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.8125rem;
+        }
+
+        .btn-lg {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ========== FORM CONTROLS MELHORADOS ========== */
+        .form-control {
+            background: var(--color-bg-surface);
+            border: 2px solid var(--color-border);
+            border-radius: var(--border-radius);
+            color: var(--color-text-primary);
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all var(--transition);
+            line-height: 1.5;
+        }
+
+            .form-control:focus {
+                background: var(--color-bg-primary);
+                border-color: var(--color-primary);
+                box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.15);
+                color: var(--color-text-primary);
+            }
+
+        .form-label {
+            color: var(--color-text-primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-text {
+            color: var(--color-text-tertiary);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        /* ========== TABLES MELHORADAS ========== */
+        .table {
+            color: var(--color-text-primary);
+            background: var(--color-bg-surface);
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            border: 1px solid var(--color-border);
+        }
+
+            .table thead th {
+                background: var(--color-bg-secondary);
+                color: var(--color-text-primary);
+                font-weight: 600;
+                border-bottom: 2px solid var(--color-border);
+                padding: 1rem;
+            }
+
+            .table tbody td {
+                padding: 1rem;
+                border-bottom: 1px solid var(--color-border-light);
+                vertical-align: middle;
+            }
+
+            .table tbody tr:hover {
+                background: var(--color-bg-tertiary);
+            }
+
+            .table tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+        /* ========== BADGES ========== */
+        .badge {
+            font-family: var(--font-family-base);
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--border-radius);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            line-height: 1;
+        }
+
+        .badge-primary {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+            color: white;
+        }
+
+        .badge-success {
+            background: linear-gradient(135deg, var(--color-success), #0f5132);
+            color: white;
+        }
+
+        .badge-warning {
+            background: linear-gradient(135deg, var(--color-warning), #664d03);
+            color: #212529;
+        }
+
+        .badge-danger {
+            background: linear-gradient(135deg, var(--color-danger), #842029);
+            color: white;
+        }
+
+        .badge-info {
+            background: linear-gradient(135deg, var(--color-info), #055160);
+            color: white;
+        }
+
+        .badge-estado {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .badge-pendente {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            color: #212529;
+        }
+
+        .badge-aceite {
+            background: linear-gradient(135deg, #0d6efd, #0a58ca);
+            color: white;
+        }
+
+        .badge-emprogresso {
+            background: linear-gradient(135deg, #0dcaf0, #0aa2c0);
+            color: white;
+        }
+
+        .badge-concluido {
+            background: linear-gradient(135deg, #198754, #13653f);
+            color: white;
+        }
+
+        .badge-cancelado {
+            background: linear-gradient(135deg, #dc3545, #b02a37);
+            color: white;
+        }
+
+        /* ========== FOOTER SIMPLES - MESMA COR PARA AMBOS OS TEMAS ========== */
+        .site-footer {
+            background: #1e293b; /* Cor fixa do modo escuro */
+            color: #f1f5f9;
+            padding: 0.75rem 0; /* REDUZIDO pela metade */
+            margin-top: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-container {
+            max-width: var(--max-content-width);
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 0.5rem; /* REDUZIDO */
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem; /* REDUZIDO */
+            color: white;
+            font-size: 0.95rem; /* REDUZIDO */
+            font-weight: 700;
+            text-decoration: none;
+            margin-bottom: 0.25rem; /* REDUZIDO */
+        }
+
+            .footer-logo:hover {
+                color: #60a5fa;
+            }
+
+        .footer-description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.75rem; /* REDUZIDO */
+            max-width: 400px; /* REDUZIDO */
+            line-height: 1.4; /* REDUZIDO */
+            margin-bottom: 0.5rem; /* REDUZIDO */
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1rem; /* REDUZIDO */
+            margin-bottom: 0.5rem; /* REDUZIDO */
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+            .footer-links a {
+                color: rgba(255, 255, 255, 0.8);
+                text-decoration: none;
+                font-size: 0.8rem; /* REDUZIDO */
+                transition: all var(--transition-fast);
+                padding: 0.125rem 0; /* REDUZIDO */
+                position: relative;
+            }
+
+                .footer-links a:hover {
+                    color: #60a5fa;
+                }
+
+                .footer-links a::after {
+                    content: '';
+                    position: absolute;
+                    bottom: -1px; /* REDUZIDO */
+                    left: 0;
+                    width: 0;
+                    height: 1px;
+                    background: #60a5fa;
+                    transition: width var(--transition);
+                }
+
+                .footer-links a:hover::after {
+                    width: 100%;
+                }
+
+        .footer-contact {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.75rem; /* REDUZIDO */
+            margin-bottom: 0.5rem; /* REDUZIDO */
+        }
+
+            .footer-contact p {
+                margin-bottom: 0.25rem; /* REDUZIDO */
+                display: flex;
+                align-items: center;
+                gap: 0.375rem; /* REDUZIDO */
+                justify-content: center;
+            }
+
+            .footer-contact i {
+                color: #60a5fa;
+                font-size: 0.8rem; /* REDUZIDO */
+            }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 0.5rem; /* REDUZIDO */
+            margin-top: 0.5rem; /* REDUZIDO */
+            width: 100%;
+        }
+
+            .footer-bottom p {
+                color: rgba(255, 255, 255, 0.6);
+                font-size: 0.7rem; /* REDUZIDO */
+                margin-bottom: 0.125rem; /* REDUZIDO */
+            }
+
+        /* ========== CUSTOM SCROLLBAR IMPROVED ========== */
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--color-bg-secondary);
+            border-radius: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-border-dark);
+            border-radius: 6px;
+            border: 2px solid var(--color-bg-secondary);
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: var(--color-text-tertiary);
+            }
+
+        ::-webkit-scrollbar-corner {
+            background: var(--color-bg-secondary);
+        }
+
+        /* ========== RESPONSIVE DESIGN MELHORADO ========== */
+        @@media (max-width: 1400px) {
+            .container, .container-fluid {
+                padding: 0 1.75rem;
+            }
+
+            .content-wrapper {
+                padding: 0 1.75rem;
+            }
+        }
+
+        @@media (max-width: 1200px) {
+            :root {
+                --max-content-width: 100%;
+            }
+
+            .container, .container-fluid {
+                padding: 0 1.5rem;
+            }
+
+            .content-wrapper {
+                padding: 0 1.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.75rem;
+            }
+        }
+
+        @@media (max-width: 992px) {
+            .main-nav {
+                display: none !important;
+            }
+
+            .search-container {
+                display: none;
+            }
+
+            .github-sidebar.active + main {
+                margin-left: 0;
+            }
+
+            .content-wrapper {
+                padding: 1rem;
+            }
+
+            main {
+                padding: 1rem 0;
+            }
+
+            .container, .container-fluid {
+                padding: 0 1.25rem;
+            }
+
+            .footer-container {
+                padding: 0 1.25rem;
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .container, .container-fluid {
+                padding: 0 1rem;
+            }
+
+            .footer-container {
+                padding: 0 1rem;
+            }
+
+            .site-footer {
+                padding: 0.625rem 0; /* REDUZIDO */
+            }
+
+            .footer-links {
+                gap: 0.75rem; /* REDUZIDO */
+            }
+
+                .footer-links a {
+                    font-size: 0.75rem; /* REDUZIDO */
+                }
+
+            .footer-description {
+                font-size: 0.7rem; /* REDUZIDO */
+                max-width: 300px; /* REDUZIDO */
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            h3 {
+                font-size: 1.25rem;
+            }
+
+            main {
+                padding: 1rem 0;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            html {
+                font-size: 14px;
+            }
+
+            .user-name {
+                display: none;
+            }
+
+            .container, .container-fluid {
+                padding: 0 0.75rem;
+            }
+
+            .footer-container {
+                padding: 0 0.75rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 0.5rem; /* REDUZIDO */
+            }
+
+            .content-wrapper {
+                padding: 0 0.75rem;
+            }
+
+            .content-panel {
+                padding: 1.25rem;
+            }
+
+            .site-footer {
+                padding: 0.5rem 0; /* REDUZIDO */
+            }
+        }
+
+        /* ========== PRINT STYLES ========== */
+        @@media print {
+            .navbar,
+            .github-sidebar,
+            .site-footer,
+            .btn {
+                display: none !important;
+            }
+
+            body {
+                padding-top: 0;
+            }
+
+            main {
+                min-height: auto;
+                padding: 0;
+            }
+
+            .card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+
+        /* ========== CORREÇÕES ESPECÍFICAS PARA LEGIBILIDADE ========== */
+
+        /* Melhorar contraste geral para modo claro */
+        [data-theme="light"] {
+            --color-text-primary: #0f172a; /* Mais escuro para melhor contraste */
+            --color-text-secondary: #334155;
+            --color-text-tertiary: #64748b;
+        }
+
+        /* Melhorar contraste para modo escuro */
+        [data-theme="dark"] {
+            --color-text-primary: #f1f5f9; /* Mais claro */
+            --color-text-secondary: #cbd5e1;
+            --color-text-tertiary: #94a3b8;
+        }
+
+        /* Correções específicas para cards e painéis */
+        [data-theme="light"] .card,
+        [data-theme="light"] .content-panel {
+            border-color: #e2e8f0;
+            background: white;
+        }
+
+        [data-theme="dark"] .card,
+        [data-theme="dark"] .content-panel {
+            border-color: #475569;
+            background: #1e293b;
+        }
+
+        /* Correções para tabelas */
+        [data-theme="light"] .table {
+            background: white;
+        }
+
+        [data-theme="dark"] .table {
+            background: #1e293b;
+        }
+
+        /* Correções para formulários */
+        [data-theme="light"] .form-control {
+            background: white;
+            border-color: #e2e8f0;
+            color: #0f172a;
+        }
+
+        [data-theme="dark"] .form-control {
+            background: #334155;
+            border-color: #475569;
+            color: #f1f5f9;
+        }
+
+        /* Correções para badges */
+        [data-theme="light"] .badge {
+            color: white !important;
+        }
+
+        /* ========== ESTILOS ESPECÍFICOS PARA REMOVER ESPAÇO BRANCO ========== */
+        .compact-section {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .no-padding-top {
+            padding-top: 0 !important;
+        }
+
+        .no-padding-bottom {
+            padding-bottom: 0 !important;
+        }
+
+        .no-margin-top {
+            margin-top: 0 !important;
+        }
+
+        .no-margin-bottom {
+            margin-bottom: 0 !important;
+        }
+
+        /* ========== MENSAGENS - Mantendo os estilos originais ========== */
+        .message-bubble {
+            max-width: 70%;
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            background: var(--color-bg-tertiary);
+            color: var(--color-text-primary);
+        }
+
+        .message-sent {
+            background: var(--color-primary);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-received {
+            background: var(--color-bg-tertiary);
+            color: var(--color-text-primary);
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: var(--color-text-tertiary);
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .message-sent .message-time {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* ========== SERVICE CARD STYLES ========== */
+        .service-card {
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            transition: all 0.2s;
+            background: var(--color-bg-surface);
+        }
+
+            .service-card:hover {
+                border-color: var(--color-primary-light);
+                box-shadow: var(--shadow);
+            }
+
+        /* ========== TIMELINE ========== */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+            .timeline::before {
+                content: '';
+                position: absolute;
+                left: 11px;
+                top: 0;
+                bottom: 0;
+                width: 2px;
+                background-color: var(--color-border);
+            }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .timeline-icon {
+            position: absolute;
+            left: -30px;
+            top: 0;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: var(--color-border);
+            border: 2px solid var(--color-bg-surface);
+        }
+
+        .timeline-item.completed .timeline-icon {
+            background-color: var(--color-success);
+        }
+
+        .timeline-item.active .timeline-icon {
+            background-color: var(--color-primary);
+            animation: pulseAnimation 2s infinite;
+        }
+
+        @@keyframes pulseAnimation {
+            0% {
+                box-shadow: 0 0 0 0 rgba(var(--color-primary-rgb), 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(var(--color-primary-rgb), 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(var(--color-primary-rgb), 0);
+            }
+        }
+
+        /* ========== DASHBOARD STATS CARDS ========== */
+        .stat-card {
+            border: none;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s;
+            background: var(--color-bg-surface);
+        }
+
+            .stat-card:hover {
+                transform: translateY(-2px);
+            }
+
+        .stat-card-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .stat-card-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .stat-card-warning {
+            background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
+            color: white;
+        }
+
+        .stat-card-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .stat-card-danger {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+        }
+
+        /* ========== LOADING SPINNER ========== */
+        .loading-spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid var(--color-border);
+            border-top: 2px solid var(--color-primary);
+            border-radius: 50%;
+            animation: spinAnimation 1s linear infinite;
+        }
+
+        @@keyframes spinAnimation {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ========== ANIMAÇÕES ADICIONAIS ========== */
+        @@keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .slide-in-right {
+            animation: slideInRight 0.4s ease-out;
+        }
+
+        .slide-in-left {
+            animation: slideInLeft 0.4s ease-out;
+        }
+
+        /* ========== FOCUS STYLES ========== */
+        :focus-visible {
+            outline: 2px solid var(--color-primary);
+            outline-offset: 2px;
+            border-radius: var(--border-radius-sm);
+        }
+
+        /* ========== SELECTION STYLES ========== */
+        ::selection {
+            background: rgba(var(--color-primary-rgb), 0.2);
+            color: var(--color-text-primary);
+        }
+
+        /* ========== PLACEHOLDER STYLES ========== */
+        ::placeholder {
+            color: var(--color-text-tertiary);
+            opacity: 0.7;
+        }
+
+        /* ========== DISABLED STATE ========== */
+        :disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- GitHub-like Sidebar -->
+    <aside class="github-sidebar" id="githubSidebar">
+        <!-- User Profile -->
+        <div class="sidebar-section">
+            <div class="d-flex align-items-center mb-3 px-3">
+                <div class="user-avatar me-3">
+                    @if (!string.IsNullOrEmpty(user?.Nome)) {
+                        <span>@user.Nome.Substring(0, 1).ToUpper()</span>
+                    } else {
+                        <i class="bi bi-person"></i>
+                    }
+                </div>
+                <div>
+                    <div class="fw-bold">@user?.Nome</div>
+                    <div class="text-muted small">@user?.Email</div>
+                    @if (user != null) {
+                        <div class="mt-1">
+                            <span class="badge @(isProfissional ? "badge-primary" : "badge-info")">
+                                @(isProfissional ? "Profissional" : "Cliente")
+                            </span>
+                            @if (user.IsPremium) {
+                                <span class="badge badge-warning ms-1">
+                                    <i class="bi bi-star-fill"></i> Premium
+                                </span>
+                            }
+                            @if (await UserManager.IsInRoleAsync(user, "Admin")) {
+                                <span class="badge badge-danger ms-1">
+                                    <i class="bi bi-shield-check"></i> Admin
+                                </span>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="sidebar-section">
+            <div class="sidebar-title">Navegação</div>
+            <a class="sidebar-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" && ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")"
+               asp-controller="Home" asp-action="Index">
+                <i class="bi bi-house-door"></i> Início
+            </a>
+            <a class="sidebar-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Procurar" ? "active" : "")"
+               asp-controller="Home" asp-action="Procurar">
+                <i class="bi bi-search"></i> Procurar
+            </a>
+            <a class="sidebar-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Sobre" ? "active" : "")"
+               asp-controller="Home" asp-action="Sobre">
+                <i class="bi bi-info-circle"></i> Sobre
+            </a>
+            <a class="sidebar-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Contactos" ? "active" : "")"
+               asp-controller="Home" asp-action="Contactos">
+                <i class="bi bi-envelope"></i> Contactos
+            </a>
+        </div>
+
+        <!-- Dashboard -->
+        @if (User.Identity.IsAuthenticated) {
+            <div class="sidebar-section">
+                <div class="sidebar-title">Dashboard</div>
+                <a class="sidebar-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Dashboard" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")"
+                   asp-controller="Dashboard" asp-action="Index">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                <a class="sidebar-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Mensagens" ? "active" : "")"
+                   asp-controller="Dashboard" asp-action="Mensagens">
+                    <i class="bi bi-chat-dots"></i> Mensagens
+                    <span class="sidebar-badge" id="sidebarMessageBadge"></span>
+                </a>
+                <a class="sidebar-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Favoritos" ? "active" : "")"
+                   asp-controller="Dashboard" asp-action="Favoritos">
+                    <i class="bi bi-heart"></i> Favoritos
+                </a>
+                <a class="sidebar-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Servicos" ? "active" : "")"
+                   asp-controller="Dashboard" asp-action="Servicos">
+                    <i class="bi bi-briefcase"></i> Serviços
+                </a>
+                @if (isProfissional) {
+                    <a class="sidebar-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "ServicosProfissionais" ? "active" : "")"
+                       asp-controller="ServicosProfissionais" asp-action="Index">
+                        <i class="bi bi-tools"></i> Meus Serviços Profissionais
+                    </a>
+                }
+                <!-- Dashboard Mode Toggle -->
+                <form asp-controller="Dashboard" asp-action="SwitchMode" method="post" id="modeToggleForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="mode" value="@(isProfissional ? "Cliente" : "Profissional")" />
+                    <button type="submit" class="sidebar-item w-100 text-start bg-transparent border-0">
+                        <i class="bi bi-arrow-repeat"></i>
+                        Modo @(isProfissional ? "Cliente" : "Profissional")
+                    </button>
+                </form>
+            </div>
+
+            <!-- Perfil -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">Perfil</div>
+                <a class="sidebar-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Account" && ViewContext.RouteData.Values["Action"]?.ToString() == "Profile" ? "active" : "")"
+                   asp-controller="Account" asp-action="Profile">
+                    <i class="bi bi-person"></i> Perfil
+                </a>
+                <a class="sidebar-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Settings" ? "active" : "")"
+                   asp-controller="Account" asp-action="Settings">
+                    <i class="bi bi-gear"></i> Configurações
+                </a>
+                @if (user?.IsPremium != true) {
+                    <a class="sidebar-item text-warning" asp-controller="Premium" asp-action="Upgrade">
+                        <i class="bi bi-star"></i> Tornar-se Premium
+                    </a>
+                }
+            </div>
+        }
+
+        <!-- Admin -->
+        @if (User.IsInRole("Admin")) {
+            <div class="sidebar-section">
+                <div class="sidebar-title">Administração</div>
+                <a class="sidebar-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" ? "active" : "")"
+                   asp-controller="Admin" asp-action="Index">
+                    <i class="bi bi-shield-check"></i> Painel Admin
+                </a>
+                <a class="sidebar-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Users" ? "active" : "")"
+                   asp-controller="Admin" asp-action="Users">
+                    <i class="bi bi-people"></i> Utilizadores
+                </a>
+                <a class="sidebar-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "ServicosProfissionais" ? "active" : "")"
+                   asp-controller="Admin" asp-action="ServicosProfissionais">
+                    <i class="bi bi-tools"></i> Serviços Profissionais
+                </a>
+                <a class="sidebar-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Services" ? "active" : "")"
+                   asp-controller="Admin" asp-action="Services">
+                    <i class="bi bi-briefcase"></i> Serviços
+                </a>
+                <a class="sidebar-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Reports" ? "active" : "")"
+                   asp-controller="Admin" asp-action="Reports">
+                    <i class="bi bi-flag"></i> Denúncias
+                </a>
+            </div>
+        }
+
+        <!-- Logout -->
+        @if (User.Identity.IsAuthenticated) {
+            <div class="sidebar-section mt-4">
+                <form asp-controller="Account" asp-action="Logout" method="post" id="sidebarLogoutForm">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="sidebar-item text-danger w-100 text-start bg-transparent border-0">
+                        <i class="bi bi-box-arrow-right"></i> Sair
+                    </button>
+                </form>
+            </div>
+        }
+    </aside>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <div class="navbar-content">
+                <!-- Hamburger Menu (à esquerda) -->
+                <div class="hamburger-menu" onclick="toggleSidebar()">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </div>
+
+                <!-- Logo EDSG com ícone home à direita -->
+                <a class="logo-container" asp-controller="Home" asp-action="Index">
+                    <span class="text-gradient">EDSG</span>
+                    <i class="bi bi-house-door logo-icon"></i>
+                </a>
+
+                <!-- Main Navigation -->
+                <div class="main-nav d-none d-xl-flex">
+                    <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Sobre" ? "active" : "")"
+                       asp-controller="Home" asp-action="Sobre">
+                        Sobre
+                    </a>
+                    <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Contactos" ? "active" : "")"
+                       asp-controller="Home" asp-action="Contactos">
+                        Contactos
+                    </a>
+                    @if (User.Identity.IsAuthenticated) {
+                        <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Dashboard" ? "active" : "")"
+                           asp-controller="Dashboard" asp-action="Index">
+                            Dashboard
+                        </a>
+                        @if (isProfissional) {
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "ServicosProfissionais" ? "active" : "")"
+                               asp-controller="ServicosProfissionais" asp-action="Index">
+                                Meus Serviços
+                            </a>
+                        }
+                        <!-- Dashboard Mode Toggle in Navbar -->
+                        <form asp-controller="Dashboard" asp-action="SwitchMode" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="mode" value="@(isProfissional ? "Cliente" : "Profissional")" />
+                            <button type="submit" class="nav-link bg-transparent border-0">
+                                <i class="bi bi-arrow-repeat me-1"></i>
+                                @(isProfissional ? "Cliente" : "Profissional")
+                            </button>
+                        </form>
+                    }
+                </div>
+
+                <!-- Search Bar - BARRAN BRANCA NO MODO CLARO -->
+                <div class="search-container d-none d-md-block">
+                    <form asp-controller="Home" asp-action="Procurar" method="get" class="w-100">
+                        <input type="text"
+                               name="termo"
+                               class="search-bar"
+                               placeholder="Pesquisar profissionais, serviços..."
+                               aria-label="Pesquisar"
+                               value="@ViewBag.Termo">
+                    </form>
+                </div>
+
+                <!-- User Menu (à direita) -->
+                <div class="user-menu ms-auto">
+                    <!-- Theme Toggle Button -->
+                    <button class="theme-toggle-btn" type="button">
+                        <i class="bi bi-sun d-none" id="sun-icon"></i>
+                        <i class="bi bi-moon d-none" id="moon-icon"></i>
+                    </button>
+
+                    <!-- Language Selector -->
+                    <div class="language-selector nav-item dropdown">
+                        <a class="nav-link dropdown-toggle p-0" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-globe"></i>
+                            <span>@(isPortuguese ? "PT" : "EN")</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="?culture=pt-PT&ui-culture=pt-PT">
+                                    <i class="bi bi-flag-fill text-danger me-2"></i>
+                                    Português
+                                    @if (isPortuguese) {
+                                        <i class="bi bi-check text-success float-end"></i>
+                                    }
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="?culture=en-US&ui-culture=en-US">
+                                    <i class="bi bi-flag-fill text-primary me-2"></i>
+                                    English
+                                    @if (!isPortuguese) {
+                                        <i class="bi bi-check text-success float-end"></i>
+                                    }
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    @if (User.Identity.IsAuthenticated) {
+                        <!-- User Profile Link - CLICA DIRETO PARA PERFIL -->
+                        <a class="user-profile-link" asp-controller="Account" asp-action="Profile">
+                            <div class="user-avatar">
+                                @if (!string.IsNullOrEmpty(user?.Nome)) {
+                                    <span>@user.Nome.Substring(0, 1).ToUpper()</span>
+                                } else {
+                                    <i class="bi bi-person"></i>
+                                }
+                            </div>
+                            <div class="user-name">
+                                <span>@user?.Nome?.Split(' ')[0]</span>
+                                <span class="message-badge" id="headerMessageBadge"></span>
+                            </div>
+                        </a>
+                    } else {
+                        <!-- Login/Register -->
+                        <a class="nav-link" asp-controller="Account" asp-action="Login">
+                            Entrar
+                        </a>
+                        <a class="btn btn-primary btn-sm" asp-controller="Account" asp-action="Register">
+                            Registar
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="content-wrapper fade-in">
+        <!-- Notifications -->
+        <div class="container container-wide">
+            @if (TempData["SuccessMessage"] != null) {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null) {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i> @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (TempData["InfoMessage"] != null) {
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <i class="bi bi-info-circle me-2"></i> @TempData["InfoMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (TempData["WarningMessage"] != null) {
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i> @TempData["WarningMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @RenderBody()
+        </div>
+    </main>
+
+    <!-- FOOTER SIMPLES - MESMA COR PARA AMBOS OS TEMAS - REDUZIDO -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <!-- Logo -->
+                <a class="footer-logo" asp-controller="Home" asp-action="Index">
+                    <span>EDSG</span>
+                    <i class="bi bi-house-door"></i>
+                </a>
+
+                <!-- Descrição -->
+                <p class="footer-description">
+                    Conectamos clientes com profissionais qualificados em diversas áreas.
+                    Serviços de qualidade, quando e onde precisa.
+                </p>
+
+                <!-- Links rápidos -->
+                <div class="footer-links">
+                    <a asp-controller="Home" asp-action="Index">Início</a>
+                    <a asp-controller="Home" asp-action="Procurar">Procurar</a>
+                    <a asp-controller="Home" asp-action="Contactos">Contactos</a>
+                    @if (User.Identity.IsAuthenticated) {
+                        <a asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+                    }
+                </div>
+
+                <!-- Direitos -->
+                <div class="footer-bottom">
+                    <p>&copy; @DateTime.Now.Year EDSG. @(isPortuguese ? "Todos os direitos reservados." : "All rights reserved.")</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- Theme JS -->
+    <script>
+        // theme.js - Sistema de tema claro/escuro aprimorado
+        (function () {
+            'use strict';
+
+            // Configurações
+            const THEME_KEY = 'theme';
+            const THEME_TRANSITION_CLASS = 'theme-transition';
+            const TRANSITION_DURATION = 300; // ms
+
+            // Elementos do DOM
+            let themeToggleBtn = null;
+
+            // Inicialização
+            function init() {
+                setupTheme();
+                setupEventListeners();
+                setupSystemThemeListener();
+                updateThemeIcons();
+            }
+
+            // Configurar tema inicial
+            function setupTheme() {
+                const savedTheme = localStorage.getItem(THEME_KEY);
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+                if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                    setTheme('dark');
+                } else {
+                    setTheme('light');
+                }
+
+                // Adicionar classe de transição após um pequeno delay
+                setTimeout(() => {
+                    document.documentElement.classList.add(THEME_TRANSITION_CLASS);
+                }, 100);
+            }
+
+            // Configurar event listeners
+            function setupEventListeners() {
+                themeToggleBtn = document.querySelector('.theme-toggle-btn');
+
+                if (themeToggleBtn) {
+                    themeToggleBtn.addEventListener('click', toggleTheme);
+                    updateToggleButton();
+                }
+
+                // Prevenir transições durante a animação
+                document.addEventListener('transitionstart', function (e) {
+                    if (e.propertyName.includes('color') || e.propertyName.includes('background')) {
+                        document.documentElement.classList.add(THEME_TRANSITION_CLASS);
+                    }
+                });
+
+                document.addEventListener('transitionend', function (e) {
+                    if (e.propertyName.includes('color') || e.propertyName.includes('background')) {
+                        setTimeout(() => {
+                            document.documentElement.classList.remove(THEME_TRANSITION_CLASS);
+                        }, TRANSITION_DURATION);
+                    }
+                });
+            }
+
+            // Configurar listener para mudanças no tema do sistema
+            function setupSystemThemeListener() {
+                const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+                mediaQuery.addEventListener('change', e => {
+                    if (!localStorage.getItem(THEME_KEY)) {
+                        setTheme(e.matches ? 'dark' : 'light');
+                        updateToggleButton();
+                        updateThemeIcons();
+                    }
+                });
+            }
+
+            // Definir tema
+            function setTheme(theme) {
+                const oldTheme = document.documentElement.getAttribute('data-theme');
+
+                if (oldTheme === theme) return;
+
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem(THEME_KEY, theme);
+
+                // Disparar evento personalizado
+                const event = new CustomEvent('themechange', {
+                    detail: { theme: theme, oldTheme: oldTheme }
+                });
+                document.documentElement.dispatchEvent(event);
+
+                updateToggleButton();
+                updateThemeIcons();
+                updateMetaThemeColor(theme);
+            }
+
+            // Atualizar cor do meta theme-color para PWA
+            function updateMetaThemeColor(theme) {
+                let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+
+                if (!metaThemeColor) {
+                    metaThemeColor = document.createElement('meta');
+                    metaThemeColor.name = 'theme-color';
+                    document.head.appendChild(metaThemeColor);
+                }
+
+                // Cores baseadas no tema
+                const colors = {
+                    light: '#1e293b',
+                    dark: '#0f172a'
+                };
+
+                metaThemeColor.content = colors[theme] || colors.light;
+            }
+
+            // Alternar tema
+            function toggleTheme() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+                // Animar o botão antes de mudar o tema
+                if (themeToggleBtn) {
+                    themeToggleBtn.style.transform = 'rotate(180deg) scale(0.9)';
+                    themeToggleBtn.style.opacity = '0.8';
+
+                    setTimeout(() => {
+                        setTheme(newTheme);
+
+                        // Restaurar botão
+                        setTimeout(() => {
+                            themeToggleBtn.style.transform = 'rotate(0deg) scale(1)';
+                            themeToggleBtn.style.opacity = '1';
+                        }, 150);
+                    }, 150);
+                } else {
+                    setTheme(newTheme);
+                }
+            }
+
+            // Atualizar botão de toggle
+            function updateToggleButton() {
+                if (!themeToggleBtn) return;
+
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const isDark = currentTheme === 'dark';
+
+                // Atualizar título e aria-label
+                themeToggleBtn.setAttribute('title', isDark ? 'Mudar para tema claro' : 'Mudar para tema escuro');
+                themeToggleBtn.setAttribute('aria-label', isDark ? 'Mudar para tema claro' : 'Mudar para tema escuro');
+                themeToggleBtn.setAttribute('aria-pressed', isDark);
+
+                // Adicionar efeito de brilho
+                themeToggleBtn.style.boxShadow = isDark ?
+                    '0 0 0 1px rgba(88, 166, 255, 0.4)' :
+                    '0 0 0 1px rgba(31, 111, 235, 0.4)';
+            }
+
+            // Atualizar ícones do tema
+            function updateThemeIcons() {
+                const theme = document.documentElement.getAttribute('data-theme');
+                const sunIcon = document.getElementById('sun-icon');
+                const moonIcon = document.getElementById('moon-icon');
+
+                if (theme === 'dark') {
+                    if (sunIcon) sunIcon.classList.remove('d-none');
+                    if (moonIcon) moonIcon.classList.add('d-none');
+                } else {
+                    if (sunIcon) sunIcon.classList.add('d-none');
+                    if (moonIcon) moonIcon.classList.remove('d-none');
+                }
+            }
+
+            // Obter tema atual
+            function getCurrentTheme() {
+                return document.documentElement.getAttribute('data-theme') || 'light';
+            }
+
+            // Forçar tema (útil para testes)
+            function forceTheme(theme) {
+                localStorage.setItem(THEME_KEY, theme);
+                setTheme(theme);
+            }
+
+            // Resetar para tema do sistema
+            function resetToSystemTheme() {
+                localStorage.removeItem(THEME_KEY);
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                setTheme(prefersDark ? 'dark' : 'light');
+            }
+
+            // Inicializar quando o DOM estiver pronto
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+            // API pública
+            window.ThemeManager = {
+                toggle: toggleTheme,
+                set: setTheme,
+                get: getCurrentTheme,
+                force: forceTheme,
+                reset: resetToSystemTheme
+            };
+
+        })();
+    </script>
+
+    <script>
+        // ========== FUNÇÕES GLOBAIS ==========
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('githubSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+            document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+        }
+
+        // Close sidebar on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('githubSidebar').classList.contains('active')) {
+                toggleSidebar();
+            }
+        });
+
+        // Auto-dismiss alerts after 5 seconds
+        setTimeout(() => {
+            document.querySelectorAll('.alert:not(.alert-permanent)').forEach(alert => {
+                const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+
+        // Search on Enter key
+        const searchBar = document.querySelector('.search-bar');
+        if (searchBar) {
+            searchBar.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const query = this.value.trim();
+                    if (query) {
+                        this.closest('form').submit();
+                    }
+                }
+            });
+        }
+
+        // ========== FUNÇÕES PARA MENSAGENS ==========
+
+        // Função para atualizar contador de mensagens não lidas
+        function updateUnreadCount() {
+            if ('@User.Identity.IsAuthenticated' !== 'True') return;
+
+            fetch('/Dashboard/GetUnreadCount')
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    const count = data.count || 0;
+                    const sidebarBadge = document.getElementById('sidebarMessageBadge');
+                    const headerBadge = document.getElementById('headerMessageBadge');
+
+                    if (count > 0) {
+                        if (sidebarBadge) {
+                            sidebarBadge.textContent = count;
+                            sidebarBadge.style.display = 'inline-block';
+                        }
+                        if (headerBadge) {
+                            headerBadge.textContent = count;
+                            headerBadge.style.display = 'inline-block';
+                        }
+                    } else {
+                        if (sidebarBadge) {
+                            sidebarBadge.textContent = '';
+                            sidebarBadge.style.display = 'none';
+                        }
+                        if (headerBadge) {
+                            headerBadge.textContent = '';
+                            headerBadge.style.display = 'none';
+                        }
+                    }
+                })
+                .catch(error => console.error('Erro ao carregar contador de mensagens:', error));
+        }
+
+        // Atualizar contador a cada 30 segundos
+        let unreadCountInterval = setInterval(updateUnreadCount, 30000);
+
+        // ========== FUNÇÕES AUXILIARES ==========
+
+        // Service state helper function
+        function getEstadoBadgeClass(estado) {
+            switch (estado) {
+                case 'Pendente': return 'badge-pendente';
+                case 'Aceite': return 'badge-aceite';
+                case 'EmProgresso': return 'badge-emprogresso';
+                case 'Concluido': return 'badge-concluido';
+                case 'Cancelado': return 'badge-cancelado';
+                case 'Recusado': return 'badge-secondary';
+                default: return 'badge-secondary';
+            }
+        }
+
+        // Service filter functionality
+        const estadoFilter = document.getElementById('estadoFilter');
+        if (estadoFilter) {
+            estadoFilter.addEventListener('change', function() {
+                const estado = this.value;
+                const rows = document.querySelectorAll('#servicosTable tbody tr');
+
+                rows.forEach(row => {
+                    if (!estado || row.dataset.estado === estado) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // Service sort functionality
+        const ordenarPor = document.getElementById('ordenarPor');
+        if (ordenarPor) {
+            ordenarPor.addEventListener('change', function() {
+                const ordem = this.value;
+                const tbody = document.querySelector('#servicosTable tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr:not([style*="display: none"])'));
+
+                rows.sort((a, b) => {
+                    switch (ordem) {
+                        case 'dataDesc':
+                            return new Date(b.dataset.data) - new Date(a.dataset.data);
+                        case 'dataAsc':
+                            return new Date(a.dataset.data) - new Date(b.dataset.data);
+                        case 'precoDesc':
+                            return parseFloat(b.dataset.preco) - parseFloat(a.dataset.preco);
+                        case 'precoAsc':
+                            return parseFloat(a.dataset.preco) - parseFloat(b.dataset.preco);
+                        case 'titulo':
+                            return a.dataset.titulo.localeCompare(b.dataset.titulo);
+                        default:
+                            return 0;
+                    }
+                });
+
+                // Reorder rows
+                rows.forEach(row => tbody.appendChild(row));
+            });
+        }
+
+        // Função para o botão "Procurar Profissionais" na Home Page
+        function goToProcurar() {
+            window.location.href = '@Url.Action("Procurar", "Home")';
+        }
+
+        // Função para confirmar ações (aceitar, recusar, cancelar serviços)
+        function confirmAction(message) {
+            return confirm(message || '@(isPortuguese ? "Tem a certeza que pretende realizar esta ação?" : "Are you sure you want to perform this action?")');
+        }
+
+        // Função para abrir modal de cancelamento
+        function openCancelModal(servicoId, servicoTitulo) {
+            const modal = new bootstrap.Modal(document.getElementById('cancelarModal'));
+            document.getElementById('servicoId').value = servicoId;
+            document.getElementById('servicoTitulo').textContent = servicoTitulo;
+            modal.show();
+        }
+
+        // ========== INICIALIZAÇÃO ==========
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add fade-in animation to main content
+            const mainContent = document.querySelector('main');
+            if (mainContent) {
+                mainContent.classList.add('fade-in');
+            }
+
+            // Carregar contador de mensagens não lidas
+            updateUnreadCount();
+
+            // Handle mobile menu
+            const mobileMenuToggle = document.createElement('button');
+            mobileMenuToggle.className = 'btn btn-primary d-lg-none ms-2';
+            mobileMenuToggle.innerHTML = '<i class="bi bi-list"></i>';
+            mobileMenuToggle.style.padding = '6px 12px';
+            mobileMenuToggle.addEventListener('click', function() {
+                document.querySelector('.main-nav').classList.toggle('d-flex');
+            });
+
+            // Add to navbar if on mobile
+            if (window.innerWidth < 992) {
+                const userMenu = document.querySelector('.user-menu');
+                userMenu.parentNode.insertBefore(mobileMenuToggle, userMenu);
+            }
+
+            // Add loading states to buttons
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('submit', function() {
+                    const submitButton = this.querySelector('button[type="submit"]');
+                    if (submitButton) {
+                        submitButton.disabled = true;
+                        const originalHTML = submitButton.innerHTML;
+                        submitButton.innerHTML = '<span class="loading-spinner me-2"></span> Processando...';
+
+                        // Reset after 5 seconds (in case of error)
+                        setTimeout(() => {
+                            submitButton.disabled = false;
+                            submitButton.innerHTML = originalHTML;
+                        }, 5000);
+                    }
+                });
+            });
+
+            // Inicializar tooltips do Bootstrap
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 992) {
+                document.querySelector('.main-nav').style.display = 'flex';
+            } else {
+                document.querySelector('.main-nav').style.display = 'none';
+            }
+        });
+
+        // ========== CLEANUP ==========
+
+        // Limpar intervalos quando a página for fechada
+        window.addEventListener('beforeunload', function() {
+            if (unreadCountInterval) {
+                clearInterval(unreadCountInterval);
+            }
+        });
+
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

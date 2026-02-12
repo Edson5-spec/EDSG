@@ -1,0 +1,413 @@
+﻿@model EDSG.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var isProfissional = Model.Modo == ModoDashboard.Profissional;
+}
+
+<div class="container-fluid">
+    <!-- Dashboard Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="bi bi-speedometer2 text-primary"></i> Dashboard
+                    </h1>
+                    <p class="text-muted mb-0">
+                        @if (isProfissional) {
+                            <span>Modo Profissional</span>
+                        } else {
+                            <span>Modo Cliente</span>
+                        }
+                    </p>
+                </div>
+
+                <!-- Mode Toggle -->
+                <div class="btn-group" role="group">
+                    <form asp-controller="Dashboard" asp-action="SwitchMode" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="mode" value="Cliente">
+                        <button type="submit" class="btn @(!isProfissional ? "btn-primary" : "btn-outline-primary")">
+                            <i class="bi bi-person"></i> Cliente
+                        </button>
+                    </form>
+                    <form asp-controller="Dashboard" asp-action="SwitchMode" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="mode" value="Profissional">
+                        <button type="submit" class="btn @(isProfissional ? "btn-primary" : "btn-outline-primary")">
+                            <i class="bi bi-briefcase"></i> Profissional
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        @if (isProfissional && Model.Estatisticas != null) {
+            <div class="col-md-3 mb-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-white-50 mb-1">Serviços Totais</h6>
+                                <h3 class="mb-0">@Model.Estatisticas.TotalServicos</h3>
+                            </div>
+                            <i class="bi bi-briefcase display-6 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-white-50 mb-1">Concluídos</h6>
+                                <h3 class="mb-0">@Model.Estatisticas.ServicosConcluidos</h3>
+                            </div>
+                            <i class="bi bi-check-circle display-6 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-white-50 mb-1">Avaliação Média</h6>
+                                <h3 class="mb-0">@Model.Estatisticas.AvaliacaoMedia.ToString("F1")</h3>
+                            </div>
+                            <i class="bi bi-star display-6 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-white-50 mb-1">Receita Total</h6>
+                                <h3 class="mb-0">€@Model.Estatisticas.ReceitaTotal.ToString("F2")</h3>
+                            </div>
+                            <i class="bi bi-currency-euro display-6 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        } else {
+            <!-- Quick Actions for Client -->
+            <div class="col-md-3 mb-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-white-50 mb-1">Serviços Ativos</h6>
+                                <h3 class="mb-0">@Model.ServicosAtivos.Count</h3>
+                            </div>
+                            <i class="bi bi-hourglass-split display-6 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-white-50 mb-1">Concluídos</h6>
+                                <h3 class="mb-0">@Model.ServicosConcluidos.Count</h3>
+                            </div>
+                            <i class="bi bi-check-circle display-6 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-white-50 mb-1">Mensagens</h6>
+                                <h3 class="mb-0">@Model.MensagensRecebidas.Count</h3>
+                            </div>
+                            <i class="bi bi-chat-dots display-6 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-white-50 mb-1">Favoritos</h6>
+                                <h3 class="mb-0">@Model.Favoritos.Count</h3>
+                            </div>
+                            <i class="bi bi-heart display-6 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Pending Services -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history text-warning"></i>
+                        @(isProfissional ? "Pedidos Pendentes" : "Serviços Pendentes")
+                    </h5>
+                    <a asp-controller="Dashboard" asp-action="Servicos" class="btn btn-sm btn-outline-primary">
+                        Ver Todos
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (Model.ServicosPendentes.Any()) {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Título</th>
+                                        @if (isProfissional) {
+                                            <th>Cliente</th>
+                                        } else {
+                                            <th>Profissional</th>
+                                        }
+                                        <th>Data</th>
+                                        <th>Preço</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var servico in Model.ServicosPendentes) {
+                                        <tr>
+                                            <td>@servico.Titulo</td>
+                                            <td>
+                                                @if (isProfissional) {
+                                                    @servico.Cliente.Nome
+                                                } else {
+                                                    @servico.Profissional.Nome
+                                                }
+                                            </td>
+                                            <td>@servico.DataPedido.ToString("dd/MM/yyyy")</td>
+                                            <td>€@servico.PrecoAcordado.ToString("F2")</td>
+                                            <td>
+                                                <a asp-controller="Dashboard" asp-action="Servicos" class="btn btn-sm btn-outline-primary">
+                                                    Ver Detalhes
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    } else {
+                        <div class="text-center py-4">
+                            <i class="bi bi-inbox display-1 text-muted"></i>
+                            <p class="text-muted mt-3">
+                                @(isProfissional ?
+                                                            "Não tem pedidos pendentes" :
+                                                            "Não tem serviços pendentes")
+                            </p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Active Services -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-play-circle text-primary"></i>
+                        @(isProfissional ? "Serviços em Progresso" : "Serviços Ativos")
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.ServicosAtivos.Any()) {
+                        <div class="row">
+                            @foreach (var servico in Model.ServicosAtivos) {
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-start border-primary border-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">@servico.Titulo</h6>
+                                            <p class="card-text small text-muted">
+                                                @servico.Descricao.Substring(0, Math.Min(100, servico.Descricao.Length))...
+                                            </p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">
+                                                    @if (isProfissional) {
+                                                        <span>Cliente: @servico.Cliente.Nome</span>
+                                                    } else {
+                                                        <span>Profissional: @servico.Profissional.Nome</span>
+                                                    }
+                                                </small>
+                                                <span class="badge bg-primary">€@servico.PrecoAcordado.ToString("F2")</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    } else {
+                        <div class="text-center py-4">
+                            <i class="bi bi-hourglass-top display-1 text-muted"></i>
+                            <p class="text-muted mt-3">
+                                @(isProfissional ?
+                                                            "Não tem serviços em progresso" :
+                                                            "Não tem serviços ativos")
+                            </p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-lightning-charge"></i> Ações Rápidas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        @if (isProfissional) {
+                            <a asp-controller="Account" asp-action="Profile" class="btn btn-outline-primary">
+                                <i class="bi bi-pencil"></i> Editar Perfil
+                            </a>
+                            <a asp-controller="Dashboard" asp-action="Servicos" class="btn btn-outline-success">
+                                <i class="bi bi-list-check"></i> Gerir Serviços
+                            </a>
+                        } else {
+                            <a asp-controller="Home" asp-action="Procurar" class="btn btn-outline-primary">
+                                <i class="bi bi-search"></i> Procurar Profissionais
+                            </a>
+                            <a asp-controller="Dashboard" asp-action="Favoritos" class="btn btn-outline-danger">
+                                <i class="bi bi-heart"></i> Ver Favoritos
+                            </a>
+                        }
+                        <a asp-controller="Dashboard" asp-action="Mensagens" class="btn btn-outline-info">
+                            <i class="bi bi-chat-dots"></i> Mensagens
+                        </a>
+                        <a asp-controller="Dashboard" asp-action="Servicos" class="btn btn-outline-warning">
+                            <i class="bi bi-briefcase"></i> Meus Serviços
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Messages -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-envelope"></i> Mensagens Recentes</h5>
+                    <span class="badge bg-primary">@Model.MensagensRecebidas.Count</span>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.MensagensRecebidas.Any()) {
+                        <div class="list-group list-group-flush">
+                            @foreach (var mensagem in Model.MensagensRecebidas.Take(5)) {
+                                <a asp-controller="Dashboard" asp-action="Mensagens" asp-route-id="@mensagem.RemetenteId"
+                                   class="list-group-item list-group-item-action border-0">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">@mensagem.Remetente.Nome</h6>
+                                        <small class="text-muted">@mensagem.DataEnvio.ToString("HH:mm")</small>
+                                    </div>
+                                    <p class="mb-1 text-truncate" style="max-width: 200px;">@mensagem.Texto</p>
+                                    @if (!mensagem.IsLida) {
+                                        <span class="badge bg-primary">Nova</span>
+                                    }
+                                </a>
+                            }
+                        </div>
+                    } else {
+                        <div class="text-center py-4">
+                            <i class="bi bi-envelope display-1 text-muted"></i>
+                            <p class="text-muted mt-3">Sem mensagens novas</p>
+                        </div>
+                    }
+                </div>
+                <div class="card-footer text-center">
+                    <a asp-controller="Dashboard" asp-action="Mensagens" class="btn btn-sm btn-link">
+                        Ver Todas as Mensagens
+                    </a>
+                </div>
+            </div>
+
+            <!-- Favorites / Recent Reviews -->
+            @if (!isProfissional) {
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-heart"></i> Favoritos</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Favoritos.Any()) {
+                            <div class="list-group list-group-flush">
+                                @foreach (var favorito in Model.Favoritos.Take(4)) {
+                                    <a asp-controller="Home" asp-action="DetalhesProfissional" asp-route-id="@favorito.Id"
+                                       class="list-group-item list-group-item-action border-0">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0">
+                                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                                                     style="width: 40px; height: 40px;">
+                                                    <span>@favorito.Nome.Substring(0, 1)</span>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <h6 class="mb-0">@favorito.Nome</h6>
+                                                <small class="text-muted">@favorito.Categoria</small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                }
+                            </div>
+                        } else {
+                            <div class="text-center py-3">
+                                <p class="text-muted">Ainda não tem favoritos</p>
+                                <a asp-controller="Home" asp-action="Procurar" class="btn btn-sm btn-outline-primary">
+                                    Procurar Profissionais
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            } else if (Model.AvaliacoesRecebidas.Any()) {
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-star"></i> Avaliações Recentes</h5>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var avaliacao in Model.AvaliacoesRecebidas.Take(3)) {
+                            <div class="mb-3 pb-3 border-bottom">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="text-warning">
+                                        @for (int i = 0; i < 5; i++) {
+                                            <i class="bi @(i < avaliacao.Nota ? "bi-star-fill" : "bi-star")"></i>
+                                        }
+                                    </span>
+                                    <span class="ms-2">@avaliacao.Nota/5</span>
+                                </div>
+                                <p class="mb-1 small">@avaliacao.Comentario</p>
+                                <small class="text-muted">por @avaliacao.Avaliador.Nome</small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

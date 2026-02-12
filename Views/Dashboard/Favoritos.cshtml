@@ -1,0 +1,46 @@
+﻿@model List<ApplicationUser>
+
+@{
+    ViewData["Title"] = "Favoritos";
+}
+
+<h2 class="mb-4">❤️ Profissionais Favoritos</h2>
+
+@if (!Model.Any()) {
+    <div class="alert alert-info">
+        Ainda não adicionaste profissionais aos favoritos.
+    </div>
+} else {
+    <div class="row">
+        @foreach (var prof in Model) {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">@prof.Nome</h5>
+
+                        @if (!string.IsNullOrEmpty(prof.Categoria)) {
+                            <p class="text-muted">@prof.Categoria</p>
+                        }
+
+                        <p>
+                            ⭐ Avaliação:
+                            @(prof.AvaliacaoMedia > 0
+                                                ? prof.AvaliacaoMedia.ToString("0.0")
+                                                : "Sem avaliações")
+                        </p>
+
+                        <form asp-action="RemoverFavorito"
+                              asp-controller="Dashboard"
+                              method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="profissionalId" value="@prof.Id" />
+                            <button class="btn btn-outline-danger btn-sm">
+                                ❌ Remover dos favoritos
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

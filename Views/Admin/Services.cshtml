@@ -1,0 +1,366 @@
+﻿@model List<EDSG.Models.Servico>
+@{
+    ViewData["Title"] = "Gestão de Serviços";
+}
+
+@functions {
+    string GetStatusBadgeClass(EstadoServico status) {
+        return status switch {
+            EstadoServico.Pendente => "bg-warning",
+            EstadoServico.Aceite => "bg-primary",
+            EstadoServico.EmProgresso => "bg-info",
+            EstadoServico.Concluido => "bg-success",
+            EstadoServico.Recusado => "bg-secondary",
+            EstadoServico.Cancelado => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3 mb-2">
+                <i class="bi bi-briefcase text-success me-2"></i>Gestão de Serviços
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Serviços</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row mb-4">
+        @{
+            var pendingCount = Model.Count(s => s.Estado == EstadoServico.Pendente);
+            var activeCount = Model.Count(s => s.Estado == EstadoServico.Aceite || s.Estado == EstadoServico.EmProgresso);
+            var completedCount = Model.Count(s => s.Estado == EstadoServico.Concluido);
+            var cancelledCount = Model.Count(s => s.Estado == EstadoServico.Cancelado);
+        }
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-primary border-4 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">
+                                Total Serviços
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">@Model.Count</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-briefcase-fill text-primary fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-warning border-4 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-warning text-uppercase mb-1">
+                                Pendentes
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">@pendingCount</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-clock-history text-warning fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-info border-4 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-info text-uppercase mb-1">
+                                Em Progresso
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">@activeCount</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-play-circle-fill text-info fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-success border-4 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-success text-uppercase mb-1">
+                                Concluídos
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">@completedCount</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-check-circle-fill text-success fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light py-3">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros Avançados</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Estado</label>
+                    <select class="form-select" name="status">
+                        <option value="">Todos os estados</option>
+                        <option value="0" selected='@(ViewBag.Status?.ToString() == "0")'>Pendente</option>
+                        <option value="1" selected='@(ViewBag.Status?.ToString() == "1")'>Aceite</option>
+                        <option value="2" selected='@(ViewBag.Status?.ToString() == "2")'>Em Progresso</option>
+                        <option value="3" selected='@(ViewBag.Status?.ToString() == "3")'>Concluído</option>
+                        <option value="4" selected='@(ViewBag.Status?.ToString() == "4")'>Cancelado</option>
+                        <option value="5" selected='@(ViewBag.Status?.ToString() == "5")'>Recusado</option>
+                    </select>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Pesquisar</label>
+                    <input type="text" class="form-control" name="search"
+                           placeholder="Título, descrição ou nome" value="@ViewBag.Search">
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Período</label>
+                    <select class="form-select" name="period">
+                        <option value="all">Todo o período</option>
+                        <option value="today">Hoje</option>
+                        <option value="week">Esta semana</option>
+                        <option value="month">Este mês</option>
+                        <option value="year">Este ano</option>
+                    </select>
+                </div>
+                <div class="col-lg-3 col-md-6 d-flex align-items-end">
+                    <div class="d-grid gap-2 w-100">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-funnel-fill"></i> Aplicar Filtros
+                        </button>
+                        <a asp-action="Services" class="btn btn-outline-secondary">Limpar</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Services Table -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-list-task me-2"></i>Lista de Serviços (@Model.Count)
+            </h5>
+            <div class="dropdown">
+                <button class="btn btn-success btn-sm" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-plus-circle me-1"></i> Novo
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-arrow-clockwise"></i> Atualizar Tudo</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-filetype-csv"></i> Exportar CSV</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-printer"></i> Imprimir</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (TempData["SuccessMessage"] != null) {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="5%">ID</th>
+                            <th width="20%">Título</th>
+                            <th width="15%">Cliente</th>
+                            <th width="15%">Profissional</th>
+                            <th width="15%">Data/Status</th>
+                            <th width="10%">Valor</th>
+                            <th width="20%" class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any()) {
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="bi bi-briefcase display-4"></i>
+                                        <p class="mt-3">Nenhum serviço encontrado</p>
+                                        <a asp-action="Services" class="btn btn-outline-success mt-2">
+                                            <i class="bi bi-arrow-clockwise"></i> Recarregar
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        } else {
+                            @foreach (var service in Model.OrderByDescending(s => s.DataPedido)) {
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-secondary">#@service.Id</span>
+                                    </td>
+                                    <td>
+                                        <strong class="d-block">@service.Titulo</strong>
+                                        <small class="text-muted text-truncate d-block" style="max-width: 250px;">
+                                            @service.Descricao
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar me-2">
+                                                <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center"
+                                                     style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                                    <span>@service.Cliente?.Nome?.Substring(0, 1) ?? "C"</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium">@service.Cliente?.Nome</div>
+                                                <small class="text-muted">@service.Cliente?.Email</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (service.Profissional != null) {
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar me-2">
+                                                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center"
+                                                         style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                                        <span>@service.Profissional.Nome?.Substring(0, 1) ?? "P"</span>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-medium">@service.Profissional.Nome</div>
+                                                    <small class="text-muted">@service.Profissional.Categoria</small>
+                                                </div>
+                                            </div>
+                                        } else {
+                                            <span class="badge bg-warning">Aguardando</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="mb-1">
+                                            <span class="badge @GetStatusBadgeClass(service.Estado) py-1 px-2">
+                                                @service.Estado
+                                            </span>
+                                        </div>
+                                        <div class="small text-muted">
+                                            <i class="bi bi-calendar me-1"></i>
+                                            @service.DataPedido.ToString("dd/MM/yyyy")
+                                        </div>
+                                        @if (service.DataConclusao.HasValue) {
+                                            <div class="small text-muted">
+                                                <i class="bi bi-check-circle me-1"></i>
+                                                Concluído: @service.DataConclusao.Value.ToString("dd/MM/yyyy")
+                                            </div>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-success">€@service.PrecoAcordado.ToString("F2")</div>
+                                        <div class="small text-muted">Acordado</div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <a href="#" class="btn btn-sm btn-outline-primary"
+                                               data-bs-toggle="tooltip" title="Ver detalhes">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-sm btn-outline-info"
+                                               data-bs-toggle="tooltip" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-sm btn-outline-success"
+                                               data-bs-toggle="tooltip" title="Atualizar status">
+                                                <i class="bi bi-arrow-clockwise"></i>
+                                            </a>
+                                            <form asp-action="DeleteService" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@service.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                        data-bs-toggle="tooltip" title="Eliminar"
+                                                        onclick="return confirm('Tem certeza que deseja eliminar este serviço? Esta ação não pode ser revertida.')">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-light py-3">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <div class="text-muted small">Total Valor</div>
+                            <div class="fw-bold h5 mb-0 text-success">
+                                €@Model.Sum(s => s.PrecoAcordado).ToString("F2")
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Média por Serviço</div>
+                            <div class="fw-bold h5 mb-0 text-primary">
+                                €@(Model.Any() ? (Model.Sum(s => s.PrecoAcordado) / Model.Count).ToString("F2") : "0,00")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <nav aria-label="Page navigation" class="d-flex justify-content-end">
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item disabled"><a class="page-link" href="#">Anterior</a></li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item"><a class="page-link" href="#">Próxima</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            // Tooltips
+            $('[data-bs-toggle="tooltip"]').tooltip();
+
+            // Confirmação para eliminação
+            $('form[action*="DeleteService"] button').on('click', function(e) {
+                if (!confirm('Tem certeza que deseja eliminar este serviço? Esta ação não pode ser revertida.')) {
+                    e.preventDefault();
+                }
+            });
+
+            // Auto-refresh da página a cada 60 segundos
+            setInterval(function() {
+                location.reload();
+            }, 60000);
+        });
+    </script>
+}

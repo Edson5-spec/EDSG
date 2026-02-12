@@ -1,0 +1,1356 @@
+﻿@model List<EDSG.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Procurar Profissionais";
+    var paginaAtual = ViewBag.PaginaAtual ?? 1;
+    var totalPaginas = ViewBag.TotalPaginas ?? 1;
+    var totalResultados = ViewBag.TotalResultados ?? 0;
+    var profissionaisPorPagina = ViewBag.ProfissionaisPorPagina ?? 10;
+
+    var categoriaSelecionada = ViewBag.Categoria as string;
+    var localizacaoSelecionada = ViewBag.Localizacao as string;
+    var termoSelecionado = ViewBag.Termo as string;
+    var precoMinSelecionado = ViewBag.PrecoMin as int?;
+    var precoMaxSelecionado = ViewBag.PrecoMax as int?;
+    var ratingFilterSelecionado = ViewBag.RatingFilter as string;
+    var premiumOnlySelecionado = ViewBag.PremiumOnly as bool?;
+
+    var avaliacaoMediaGeral = ViewBag.AvaliacaoMediaGeral as double? ?? 0;
+    var precoMedio = ViewBag.PrecoMedio as decimal? ?? 0;
+    var totalPremium = ViewBag.TotalPremium as int? ?? 0;
+    var ratingDistribution = ViewBag.RatingDistribution as Dictionary<string, int> ?? new Dictionary<string, int>();
+
+    // Calcular páginas para mostrar
+    var paginasParaMostrar = new List<int>();
+    var inicio = Math.Max(1, paginaAtual - 2);
+    var fim = Math.Min(totalPaginas, paginaAtual + 2);
+
+    for (int i = inicio; i <= fim; i++)
+    {
+        paginasParaMostrar.Add(i);
+    }
+}
+
+<div class="container-fluid py-3">
+    <div class="row g-3">
+        <!-- Filters Sidebar -->
+        <div class="col-lg-3">
+            <div class="sticky-sidebar">
+                <!-- Results Summary -->
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-body p-3">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="fw-bold mb-0">@totalResultados profissionais</h6>
+                                <small class="text-muted">Página @paginaAtual de @totalPaginas</small>
+                            </div>
+                            <span class="badge bg-primary">@profissionaisPorPagina/página</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros</h5>
+                    </div>
+                    <div class="card-body p-3">
+                        <form method="get" asp-controller="Home" asp-action="Procurar" id="filterForm">
+                            <!-- Hidden fields to maintain pagination -->
+                            <input type="hidden" name="pagina" value="1" id="paginaInput">
+
+                            <!-- Categoria -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small mb-1">Categoria</label>
+                                <select class="form-select form-select-sm" name="categoria" id="categoriaSelect">
+                                    <option value="">Todas as categorias</option>
+                                    @foreach (var cat in ViewBag.Categorias ?? new List<string>())
+                                    {
+                                        var isSelected = cat == categoriaSelecionada;
+                                        <option value="@cat" selected="@isSelected">@cat</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <!-- Localização -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small mb-1">Localização</label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-light"><i class="bi bi-geo-alt"></i></span>
+                                    <input type="text" class="form-control" name="localizacao" id="localizacaoInput"
+                                           value="@localizacaoSelecionada" placeholder="Ex: Lisboa, Porto">
+                                </div>
+                            </div>
+
+                            <!-- Palavra-chave -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small mb-1">Palavra-chave</label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                                    <input type="text" class="form-control" name="termo" id="termoInput"
+                                           value="@termoSelecionado" placeholder="Ex: Desenvolvimento, Design">
+                                </div>
+                            </div>
+
+                            <!-- Preço -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small mb-1">Preço por hora (€)</label>
+                                <div class="row g-1">
+                                    <div class="col-6">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-light">Min</span>
+                                            <input type="number" class="form-control" name="precoMin" id="precoMinInput"
+                                                   value="@precoMinSelecionado" placeholder="0" min="0" max="1000">
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-light">Max</span>
+                                            <input type="number" class="form-control" name="precoMax" id="precoMaxInput"
+                                                   value="@precoMaxSelecionado" placeholder="1000" min="0" max="10000">
+                                        </div>
+                                    </div>
+                                </div>
+                                <small class="text-muted">Deixe vazio para qualquer preço</small>
+                            </div>
+
+                            <!-- FILTRO CONVENCIONAL DE ESTRELAS (Tipo Amazon/Booking) -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small mb-1">
+                                    <i class="bi bi-star-fill text-warning me-1"></i> Avaliação
+                                </label>
+
+                                <div class="list-group list-group-flush border-0" id="ratingFilters">
+                                    <!-- Todos -->
+                                    <button type="button" class="list-group-item list-group-item-action border-0 py-2 px-2 rating-filter @(string.IsNullOrEmpty(ratingFilterSelecionado) ? "active" : "")"
+                                            data-value="">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <div class="form-check mb-0">
+                                                    <input class="form-check-input me-2" type="radio" name="ratingRadio"
+                                                           id="ratingAll" @(string.IsNullOrEmpty(ratingFilterSelecionado) ? "checked" : "")>
+                                                    <label class="form-check-label small" for="ratingAll">
+                                                        <i class="bi bi-stars me-1"></i>Todos os profissionais
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-secondary bg-opacity-25 text-secondary">@totalResultados</span>
+                                        </div>
+                                    </button>
+
+                                    <!-- 5 estrelas -->
+                                    <button type="button" class="list-group-item list-group-item-action border-0 py-2 px-2 rating-filter @(ratingFilterSelecionado == "5" ? "active" : "")"
+                                            data-value="5">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <div class="form-check mb-0">
+                                                    <input class="form-check-input me-2" type="radio" name="ratingRadio"
+                                                           id="rating5" @(ratingFilterSelecionado == "5" ? "checked" : "")>
+                                                    <label class="form-check-label small" for="rating5">
+                                                        <div class="d-flex align-items-center">
+                                                            @for (int i = 0; i < 5; i++)
+                                                            {
+                                                                <i class="bi bi-star-fill text-warning me-1" style="font-size: 0.9rem;"></i>
+                                                            }
+                                                            <span class="ms-1">5 estrelas</span>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-warning bg-opacity-25 text-warning">@(ratingDistribution.ContainsKey("5") ? ratingDistribution["5"] : 0)</span>
+                                        </div>
+                                    </button>
+
+                                    <!-- 4 estrelas -->
+                                    <button type="button" class="list-group-item list-group-item-action border-0 py-2 px-2 rating-filter @(ratingFilterSelecionado == "4" ? "active" : "")"
+                                            data-value="4">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <div class="form-check mb-0">
+                                                    <input class="form-check-input me-2" type="radio" name="ratingRadio"
+                                                           id="rating4" @(ratingFilterSelecionado == "4" ? "checked" : "")>
+                                                    <label class="form-check-label small" for="rating4">
+                                                        <div class="d-flex align-items-center">
+                                                            @for (int i = 0; i < 4; i++)
+                                                            {
+                                                                <i class="bi bi-star-fill text-warning me-1" style="font-size: 0.9rem;"></i>
+                                                            }
+                                                            <i class="bi bi-star text-muted me-1" style="font-size: 0.9rem;"></i>
+                                                            <span class="ms-1">4 estrelas</span>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-warning bg-opacity-25 text-warning">@(ratingDistribution.ContainsKey("4") ? ratingDistribution["4"] : 0)</span>
+                                        </div>
+                                    </button>
+
+                                    <!-- 3 estrelas -->
+                                    <button type="button" class="list-group-item list-group-item-action border-0 py-2 px-2 rating-filter @(ratingFilterSelecionado == "3" ? "active" : "")"
+                                            data-value="3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <div class="form-check mb-0">
+                                                    <input class="form-check-input me-2" type="radio" name="ratingRadio"
+                                                           id="rating3" @(ratingFilterSelecionado == "3" ? "checked" : "")>
+                                                    <label class="form-check-label small" for="rating3">
+                                                        <div class="d-flex align-items-center">
+                                                            @for (int i = 0; i < 3; i++)
+                                                            {
+                                                                <i class="bi bi-star-fill text-warning me-1" style="font-size: 0.9rem;"></i>
+                                                            }
+                                                            @for (int i = 0; i < 2; i++)
+                                                            {
+                                                                <i class="bi bi-star text-muted me-1" style="font-size: 0.9rem;"></i>
+                                                            }
+                                                            <span class="ms-1">3 estrelas</span>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-warning bg-opacity-25 text-warning">@(ratingDistribution.ContainsKey("3") ? ratingDistribution["3"] : 0)</span>
+                                        </div>
+                                    </button>
+
+                                    <!-- 2 estrelas -->
+                                    <button type="button" class="list-group-item list-group-item-action border-0 py-2 px-2 rating-filter @(ratingFilterSelecionado == "2" ? "active" : "")"
+                                            data-value="2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <div class="form-check mb-0">
+                                                    <input class="form-check-input me-2" type="radio" name="ratingRadio"
+                                                           id="rating2" @(ratingFilterSelecionado == "2" ? "checked" : "")>
+                                                    <label class="form-check-label small" for="rating2">
+                                                        <div class="d-flex align-items-center">
+                                                            @for (int i = 0; i < 2; i++)
+                                                            {
+                                                                <i class="bi bi-star-fill text-warning me-1" style="font-size: 0.9rem;"></i>
+                                                            }
+                                                            @for (int i = 0; i < 3; i++)
+                                                            {
+                                                                <i class="bi bi-star text-muted me-1" style="font-size: 0.9rem;"></i>
+                                                            }
+                                                            <span class="ms-1">2 estrelas</span>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-warning bg-opacity-25 text-warning">@(ratingDistribution.ContainsKey("2") ? ratingDistribution["2"] : 0)</span>
+                                        </div>
+                                    </button>
+
+                                    <!-- 1 estrela -->
+                                    <button type="button" class="list-group-item list-group-item-action border-0 py-2 px-2 rating-filter @(ratingFilterSelecionado == "1" ? "active" : "")"
+                                            data-value="1">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <div class="form-check mb-0">
+                                                    <input class="form-check-input me-2" type="radio" name="ratingRadio"
+                                                           id="rating1" @(ratingFilterSelecionado == "1" ? "checked" : "")>
+                                                    <label class="form-check-label small" for="rating1">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="bi bi-star-fill text-warning me-1" style="font-size: 0.9rem;"></i>
+                                                            @for (int i = 0; i < 4; i++)
+                                                            {
+                                                                <i class="bi bi-star text-muted me-1" style="font-size: 0.9rem;"></i>
+                                                            }
+                                                            <span class="ms-1">1 estrela</span>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-warning bg-opacity-25 text-warning">@(ratingDistribution.ContainsKey("1") ? ratingDistribution["1"] : 0)</span>
+                                        </div>
+                                    </button>
+
+                                    <!-- 4+ estrelas -->
+                                    <button type="button" class="list-group-item list-group-item-action border-0 py-2 px-2 rating-filter @(ratingFilterSelecionado == "4plus" ? "active" : "")"
+                                            data-value="4plus">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <div class="form-check mb-0">
+                                                    <input class="form-check-input me-2" type="radio" name="ratingRadio"
+                                                           id="rating4plus" @(ratingFilterSelecionado == "4plus" ? "checked" : "")>
+                                                    <label class="form-check-label small" for="rating4plus">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="bi bi-stars text-warning me-1"></i>
+                                                            <span>4+ estrelas</span>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-warning bg-opacity-25 text-warning">
+                                                @{
+                                                    var count4Plus = (ratingDistribution.ContainsKey("5") ? ratingDistribution["5"] : 0) +
+                                                    (ratingDistribution.ContainsKey("4") ? ratingDistribution["4"] : 0);
+                                                }
+                                                @count4Plus
+                                            </span>
+                                        </div>
+                                    </button>
+
+                                    <!-- 3+ estrelas -->
+                                    <button type="button" class="list-group-item list-group-item-action border-0 py-2 px-2 rating-filter @(ratingFilterSelecionado == "3plus" ? "active" : "")"
+                                            data-value="3plus">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <div class="form-check mb-0">
+                                                    <input class="form-check-input me-2" type="radio" name="ratingRadio"
+                                                           id="rating3plus" @(ratingFilterSelecionado == "3plus" ? "checked" : "")>
+                                                    <label class="form-check-label small" for="rating3plus">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="bi bi-stars text-warning me-1"></i>
+                                                            <span>3+ estrelas</span>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-warning bg-opacity-25 text-warning">
+                                                @{
+                                                    var count3Plus = count4Plus + (ratingDistribution.ContainsKey("3") ? ratingDistribution["3"] : 0);
+                                                }
+                                                @count3Plus
+                                            </span>
+                                        </div>
+                                    </button>
+                                </div>
+
+                                <input type="hidden" name="ratingFilter" id="ratingValue" value="@ratingFilterSelecionado">
+
+                                @if (!string.IsNullOrEmpty(ratingFilterSelecionado))
+                                {
+                                    <div class="alert alert-warning border-warning py-1 px-2 mt-2 small">
+                                        <i class="bi bi-funnel-fill me-1"></i>
+                                        <strong>Filtro ativo:</strong>
+                                        @switch (ratingFilterSelecionado)
+                                        {
+                                            case "5":
+                                                <span>5 estrelas</span>
+                                                break;
+                                            case "4":
+                                                <span>4 estrelas</span>
+                                                break;
+                                            case "3":
+                                                <span>3 estrelas</span>
+                                                break;
+                                            case "2":
+                                                <span>2 estrelas</span>
+                                                break;
+                                            case "1":
+                                                <span>1 estrela</span>
+                                                break;
+                                            case "4plus":
+                                                <span>4+ estrelas</span>
+                                                break;
+                                            case "3plus":
+                                                <span>3+ estrelas</span>
+                                                break;
+                                        }
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Filtros extras -->
+                            <div class="mb-3">
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="premium-only"
+                                           name="premiumOnly" @(premiumOnlySelecionado == true ? "checked" : "")>
+                                    <label class="form-check-label small" for="premium-only">
+                                        <i class="bi bi-star-fill text-warning me-1"></i> Apenas Premium
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Botões -->
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-sm py-2" id="applyFilters">
+                                    <i class="bi bi-search me-1"></i> Aplicar Filtros
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm py-2" id="clearFilters">
+                                    <i class="bi bi-x-circle me-1"></i> Limpar Todos
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Estatísticas -->
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-header bg-light py-2">
+                        <h6 class="mb-0 small fw-semibold"><i class="bi bi-bar-chart me-1"></i> Estatísticas</h6>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="row g-2 text-center">
+                            <div class="col-6 mb-2">
+                                <div class="stat-box bg-primary bg-opacity-10 p-2 rounded">
+                                    <div class="h5 fw-bold text-primary mb-0">@totalResultados</div>
+                                    <small class="text-muted">Total</small>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <div class="stat-box bg-warning bg-opacity-10 p-2 rounded">
+                                    <div class="h5 fw-bold text-warning mb-0">@ViewBag.TotalPremium</div>
+                                    <small class="text-muted">Premium</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-box bg-info bg-opacity-10 p-2 rounded">
+                                    <div class="h5 fw-bold text-info mb-0">@ViewBag.AvaliacaoMediaGeral.ToString("F1")</div>
+                                    <small class="text-muted">Avaliação</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-box bg-success bg-opacity-10 p-2 rounded">
+                                    <div class="h5 fw-bold text-success mb-0">€@ViewBag.PrecoMedio.ToString("F0")</div>
+                                    <small class="text-muted">Média/h</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Distribuição de ratings -->
+                        <div class="mt-3 pt-2 border-top">
+                            <h6 class="small fw-semibold mb-2">Distribuição por rating</h6>
+                            <div class="list-group list-group-flush small">
+                                @{
+                                    var ratings = new[] { "5", "4", "3", "2", "1", "0" };
+                                    var ratingLabels = new[] { "5 estrelas", "4 estrelas", "3 estrelas", "2 estrelas", "1 estrela", "Sem avaliação" };
+                                    var ratingColors = new[] { "warning", "warning", "warning", "warning", "warning", "secondary" };
+
+                                    for (int i = 0; i < ratings.Length; i++)
+                                    {
+                                        var count = ratingDistribution.ContainsKey(ratings[i]) ? ratingDistribution[ratings[i]] : 0;
+                                        if (count > 0)
+                                        {
+                                            <div class="list-group-item border-0 px-0 py-1 d-flex justify-content-between align-items-center">
+                                                <div class="d-flex align-items-center">
+                                                    @if (i < 5)
+                                                    {
+                                                        @for (int j = 0; j < 5; j++)
+                                                        {
+                                                            if (j < int.Parse(ratings[i]))
+                                                            {
+                                                                <i class="bi bi-star-fill text-warning me-1" style="font-size: 0.7rem;"></i>
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="bi bi-star text-muted me-1" style="font-size: 0.7rem;"></i>
+                                                            }
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="bi bi-star text-muted me-1" style="font-size: 0.7rem;"></i>
+                                                        <span>Sem avaliação</span>
+                                                    }
+                                                </div>
+                                                <span class="badge bg-@ratingColors[i] bg-opacity-25 text-@ratingColors[i]">@count</span>
+                                            </div>
+                                        }
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Area -->
+        <div class="col-lg-9">
+            <!-- Header com estatísticas -->
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-body p-3">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                        <div class="mb-2 mb-md-0">
+                            <h1 class="h5 fw-bold mb-1">
+                                <i class="bi bi-search me-2"></i>Profissionais Encontrados
+                            </h1>
+                            <p class="small text-muted mb-0">
+                                Mostrando <span class="fw-semibold">@(Math.Min(totalResultados, profissionaisPorPagina))</span> de
+                                <span class="fw-semibold">@totalResultados</span> profissionais
+                            </p>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <!-- Ordenação -->
+                            <div class="dropdown">
+                                <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-sort-down-alt me-1"></i> Ordenar
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item small" href="#" data-sort="avaliacao">
+                                            <i class="bi bi-star-fill text-warning me-2"></i>Mais Avaliados
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item small" href="#" data-sort="preco-asc">
+                                            <i class="bi bi-arrow-up me-2"></i>Preço: Menor
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item small" href="#" data-sort="preco-desc">
+                                            <i class="bi bi-arrow-down me-2"></i>Preço: Maior
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item small" href="#" data-sort="premium">
+                                            <i class="bi bi-star text-warning me-2"></i>Premium primeiro
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Modo visualização -->
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-primary active view-mode" data-mode="grid">
+                                    <i class="bi bi-grid-3x3-gap"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-primary view-mode" data-mode="list">
+                                    <i class="bi bi-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Grid/List -->
+            @if (Model.Count == 0)
+            {
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-search display-4 text-muted mb-3"></i>
+                        <h5 class="fw-bold text-muted mb-3">Nenhum profissional encontrado</h5>
+                        <p class="text-muted mb-4">Tente ajustar os seus filtros de pesquisa</p>
+                        <a asp-controller="Home" asp-action="Procurar" class="btn btn-primary btn-sm">
+                            <i class="bi bi-arrow-clockwise me-1"></i> Limpar filtros
+                        </a>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- Results Container -->
+                <div id="profissionaisContainer">
+                    <!-- Grid View (default) -->
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 view-content" id="gridView">
+                        @foreach (var profissional in Model)
+                        {
+                            var avaliacaoMedia = profissional.AvaliacaoMedia;
+                            var totalAvaliacoes = profissional.TotalAvaliacoes;
+                            var precoDisplay = profissional.PrecoBase?.ToString("F0") ?? "0";
+                            var disponivelAgora = new Random().Next(0, 10) > 3;
+                            var bioResumo = !string.IsNullOrEmpty(profissional.Bio) && profissional.Bio.Length > 100
+                            ? profissional.Bio.Substring(0, 100) + "..."
+                            : profissional.Bio ?? "Sem descrição disponível";
+
+                            // Determinar faixa de rating para mostrar
+                            int ratingFaixa = 0;
+                            if (avaliacaoMedia >= 4.9) ratingFaixa = 5;
+                            else if (avaliacaoMedia >= 3.9) ratingFaixa = 4;
+                            else if (avaliacaoMedia >= 2.9) ratingFaixa = 3;
+                            else if (avaliacaoMedia >= 1.9) ratingFaixa = 2;
+                            else if (avaliacaoMedia > 0) ratingFaixa = 1;
+
+                            <div class="col" data-profissional data-premium="@profissional.IsPremium.ToString().ToLower()"
+                                 data-disponivel="@disponivelAgora.ToString().ToLower()"
+                                 data-avaliacao="@avaliacaoMedia" data-preco="@(profissional.PrecoBase ?? 0)"
+                                 data-rating-faixa="@ratingFaixa">
+                                <div class="card h-100 border-0 shadow-sm hover-card">
+                                    <!-- Cabeçalho com nome e preço -->
+                                    <div class="card-header bg-transparent border-0 pt-3 pb-2 px-3">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <!-- Nome -->
+                                            <div class="me-2">
+                                                <h6 class="fw-bold mb-1 text-truncate" style="max-width: 150px;">
+                                                    @profissional.Nome
+                                                    @if (profissional.IsPremium)
+                                                    {
+                                                        <i class="bi bi-star-fill text-warning ms-1"
+                                                           style="font-size: 0.8rem;"
+                                                           title="Premium"></i>
+                                                    }
+                                                </h6>
+                                                <div class="d-flex align-items-center small text-muted">
+                                                    <i class="bi bi-geo-alt me-1"></i>
+                                                    <span class="text-truncate" style="max-width: 120px;">
+                                                        @profissional.Localizacao
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Preço -->
+                                            <div class="text-end">
+                                                <div class="h5 fw-bold text-primary mb-0">€@precoDisplay</div>
+                                                <small class="text-muted">/h</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Categorias -->
+                                    <div class="px-3 pb-2">
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <span class="badge bg-primary bg-opacity-10 text-primary border-0 small px-2 py-1">
+                                                @profissional.Categoria
+                                            </span>
+                                            @if (!string.IsNullOrEmpty(profissional.Especialidade))
+                                            {
+                                                <span class="badge bg-secondary bg-opacity-10 text-secondary border-0 small px-2 py-1">
+                                                    @profissional.Especialidade
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <!-- Descrição -->
+                                    <div class="card-body pt-0 pb-3 px-3">
+                                        <p class="small text-muted mb-3 line-clamp-2" style="min-height: 40px;">
+                                            @bioResumo
+                                        </p>
+
+                                        <!-- Avaliação -->
+                                        <div class="mb-3">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="d-flex rating-container">
+                                                        @{
+                                                            double rating = avaliacaoMedia;
+                                                            int fullStars = (int)Math.Floor(rating);
+                                                            bool hasHalfStar = (rating - fullStars) >= 0.5;
+                                                            int emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+                                                        }
+
+                                                        @for (int i = 0; i < fullStars; i++)
+                                                        {
+                                                            <i class="bi bi-star-fill text-warning" style="font-size: 0.85rem; margin-right: 0.1rem;"></i>
+                                                        }
+
+                                                        @if (hasHalfStar)
+                                                        {
+                                                            <i class="bi bi-star-half text-warning" style="font-size: 0.85rem; margin-right: 0.1rem;"></i>
+                                                        }
+
+                                                        @for (int i = 0; i < emptyStars; i++)
+                                                        {
+                                                            <i class="bi bi-star text-muted" style="font-size: 0.85rem; margin-right: 0.1rem;"></i>
+                                                        }
+                                                    </div>
+                                                    <span class="fw-bold small">@avaliacaoMedia.ToString("F1")</span>
+                                                </div>
+                                                <small class="text-muted">(@totalAvaliacoes)</small>
+                                            </div>
+                                        </div>
+
+                                        <!-- Botões -->
+                                        <div class="d-grid gap-2">
+                                            <a asp-controller="Home" asp-action="DetalhesProfissional"
+                                               asp-route-id="@profissional.Id"
+                                               class="btn btn-outline-primary btn-sm py-2">
+                                                <i class="bi bi-eye me-1"></i> Ver Perfil
+                                            </a>
+                                            @if (User.Identity.IsAuthenticated)
+                                            {
+                                                <a asp-controller="Dashboard" asp-action="NovoServico"
+                                                   asp-route-profissionalId="@profissional.Id"
+                                                   class="btn btn-primary btn-sm py-2">
+                                                    <i class="bi bi-chat-dots me-1"></i> Solicitar
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a asp-controller="Account" asp-action="Login"
+                                                   class="btn btn-primary btn-sm py-2">
+                                                    <i class="bi bi-chat-dots me-1"></i> Entrar
+                                                </a>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <!-- Footer -->
+                                    <div class="card-footer bg-transparent border-top pt-2 pb-2 px-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                @if (disponivelAgora)
+                                                {
+                                                    <span class="badge bg-success bg-opacity-10 text-success border-0 small">
+                                                        <i class="bi bi-circle-fill me-1"></i> Disponível
+                                                    </span>
+                                                }
+                                            </div>
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock me-1"></i> @DateTime.Now.AddDays(-new Random().Next(1, 30)).ToString("dd/MM")
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- List View (hidden by default) -->
+                    <div class="view-content d-none" id="listView">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush">
+                                    @foreach (var profissional in Model)
+                                    {
+                                        var avaliacaoMedia = profissional.AvaliacaoMedia;
+                                        var totalAvaliacoes = profissional.TotalAvaliacoes;
+                                        var precoDisplay = profissional.PrecoBase?.ToString("F0") ?? "0";
+                                        var disponivelAgora = new Random().Next(0, 10) > 3;
+                                        var bioResumo = !string.IsNullOrEmpty(profissional.Bio) && profissional.Bio.Length > 150
+                                        ? profissional.Bio.Substring(0, 150) + "..."
+                                        : profissional.Bio ?? "Sem descrição disponível";
+
+                                        <div class="list-group-item border-0 px-4 py-3">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-2 text-center text-md-start mb-2 mb-md-0">
+                                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mx-md-0"
+                                                         style="width: 50px; height: 50px;">
+                                                        <span style="font-size: 1.2rem;">@profissional.Nome.Substring(0, 1).ToUpper()</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-5 mb-2 mb-md-0">
+                                                    <h6 class="fw-bold mb-1">
+                                                        @profissional.Nome
+                                                        @if (profissional.IsPremium)
+                                                        {
+                                                            <i class="bi bi-star-fill text-warning ms-1"
+                                                               style="font-size: 0.8rem;"
+                                                               title="Premium"></i>
+                                                        }
+                                                    </h6>
+                                                    <div class="small text-muted mb-1">
+                                                        <i class="bi bi-geo-alt me-1"></i> @profissional.Localizacao
+                                                    </div>
+                                                    <div class="d-flex flex-wrap gap-1">
+                                                        <span class="badge bg-primary bg-opacity-10 text-primary border-0 small px-2 py-1">
+                                                            @profissional.Categoria
+                                                        </span>
+                                                        @if (!string.IsNullOrEmpty(profissional.Especialidade))
+                                                        {
+                                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border-0 small px-2 py-1">
+                                                                @profissional.Especialidade
+                                                            </span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-2 mb-md-0">
+                                                    <div class="d-flex align-items-center mb-1">
+                                                        <div class="d-flex rating-stars me-2">
+                                                            @{
+                                                                double rating = avaliacaoMedia;
+                                                                int fullStars = (int)Math.Floor(rating);
+                                                                bool hasHalfStar = (rating - fullStars) >= 0.5;
+                                                                int emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+                                                            }
+
+                                                            @for (int i = 0; i < fullStars; i++)
+                                                            {
+                                                                <i class="bi bi-star-fill text-warning" style="font-size: 0.85rem; margin-right: 0.1rem;"></i>
+                                                            }
+
+                                                            @if (hasHalfStar)
+                                                            {
+                                                                <i class="bi bi-star-half text-warning" style="font-size: 0.85rem; margin-right: 0.1rem;"></i>
+                                                            }
+
+                                                            @for (int i = 0; i < emptyStars; i++)
+                                                            {
+                                                                <i class="bi bi-star text-muted" style="font-size: 0.85rem; margin-right: 0.1rem;"></i>
+                                                            }
+                                                        </div>
+                                                        <span class="fw-bold small">@avaliacaoMedia.ToString("F1")</span>
+                                                    </div>
+                                                    <div class="h5 fw-bold text-primary mb-0">€@precoDisplay<small class="text-muted">/h</small></div>
+                                                </div>
+                                                <div class="col-md-2 text-end">
+                                                    <a asp-controller="Home" asp-action="DetalhesProfissional"
+                                                       asp-route-id="@profissional.Id"
+                                                       class="btn btn-primary btn-sm">
+                                                        Ver Perfil
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paginação -->
+                <div class="mt-4">
+                    <nav aria-label="Paginação" class="d-flex justify-content-center">
+                        <ul class="pagination flex-wrap justify-content-center mb-0">
+                            <!-- Página anterior -->
+                            <li class="page-item @(paginaAtual == 1 ? "disabled" : "")">
+                                <a class="page-link" href="@BuildPageUrl(paginaAtual - 1)" aria-label="Anterior">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+
+                            @if (totalPaginas > 1)
+                            {
+                                <!-- Primeiras páginas -->
+                                @if (paginaAtual > 3)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@BuildPageUrl(1)">1</a>
+                                    </li>
+                                    @if (paginaAtual > 4)
+                                    {
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    }
+                                }
+
+                                <!-- Páginas numéricas -->
+                                @foreach (var pagina in paginasParaMostrar)
+                                {
+                                    if (pagina == paginaAtual)
+                                    {
+                                        <li class="page-item active" aria-current="page">
+                                            <span class="page-link">@pagina</span>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="@BuildPageUrl(pagina)">@pagina</a>
+                                        </li>
+                                    }
+                                }
+
+                                <!-- Últimas páginas -->
+                                @if (paginaAtual < totalPaginas - 2)
+                                {
+                                    @if (paginaAtual < totalPaginas - 3)
+                                    {
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    }
+                                    <li class="page-item">
+                                        <a class="page-link" href="@BuildPageUrl(totalPaginas)">@totalPaginas</a>
+                                    </li>
+                                }
+                            }
+                            else
+                            {
+                                <li class="page-item active" aria-current="page">
+                                    <span class="page-link">1</span>
+                                </li>
+                            }
+
+                            <!-- Próxima página -->
+                            <li class="page-item @(paginaAtual == totalPaginas ? "disabled" : "")">
+                                <a class="page-link" href="@BuildPageUrl(paginaAtual + 1)" aria-label="Próxima">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+
+                    <!-- Informação da página -->
+                    <div class="text-center mt-2">
+                        <small class="text-muted">
+                            Página @paginaAtual de @totalPaginas • @totalResultados resultados
+                        </small>
+                    </div>
+                </div>
+
+                <!-- CTA -->
+                @if (!User.Identity.IsAuthenticated && totalResultados > 0)
+                {
+                    <div class="card bg-gradient-primary text-white border-0 mt-4">
+                        <div class="card-body p-4">
+                            <div class="d-flex flex-column flex-md-row align-items-center justify-content-between">
+                                <div class="d-flex align-items-center mb-3 mb-md-0">
+                                    <i class="bi bi-stars fs-2 me-3"></i>
+                                    <div>
+                                        <h6 class="mb-1 fw-bold">Encontrou o profissional ideal?</h6>
+                                        <p class="small mb-0 opacity-90">Registe-se gratuitamente para contactar</p>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a asp-controller="Account" asp-action="Register" class="btn btn-light btn-sm px-4">
+                                        <i class="bi bi-person-plus me-1"></i> Criar Conta
+                                    </a>
+                                    <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-sm">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i> Entrar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    string BuildPageUrl(int pagina)
+    {
+        var queryParams = new Dictionary<string, string>();
+
+        if (!string.IsNullOrEmpty(ViewBag.Categoria))
+            queryParams["categoria"] = ViewBag.Categoria;
+
+        if (!string.IsNullOrEmpty(ViewBag.Localizacao))
+            queryParams["localizacao"] = ViewBag.Localizacao;
+
+        if (!string.IsNullOrEmpty(ViewBag.Termo))
+            queryParams["termo"] = ViewBag.Termo;
+
+        if (ViewBag.PrecoMin != null)
+            queryParams["precoMin"] = ViewBag.PrecoMin.ToString();
+
+        if (ViewBag.PrecoMax != null)
+            queryParams["precoMax"] = ViewBag.PrecoMax.ToString();
+
+        if (!string.IsNullOrEmpty(ViewBag.RatingFilter))
+            queryParams["ratingFilter"] = ViewBag.RatingFilter;
+
+        if (ViewBag.PremiumOnly != null)
+            queryParams["premiumOnly"] = ViewBag.PremiumOnly.ToString();
+
+        queryParams["pagina"] = pagina.ToString();
+
+        var queryString = string.Join("&", queryParams.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
+        return $"/Home/Procurar?{queryString}";
+    }
+}
+
+<style>
+    .container-fluid {
+        max-width: 1400px;
+    }
+
+    .sticky-sidebar {
+        position: sticky;
+        top: 80px;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+    }
+
+    .hover-card {
+        transition: all 0.2s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .hover-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        }
+
+    /* Filtros de rating estilo Amazon/Booking */
+    .rating-filter {
+        border-radius: 6px !important;
+        margin-bottom: 2px !important;
+        transition: all 0.2s;
+    }
+
+        .rating-filter:hover {
+            background-color: rgba(13, 110, 253, 0.05) !important;
+            border-color: rgba(13, 110, 253, 0.2) !important;
+        }
+
+        .rating-filter.active {
+            background-color: rgba(13, 110, 253, 0.1) !important;
+            border-left: 3px solid #0d6efd !important;
+            font-weight: 600;
+        }
+
+        .rating-filter .form-check-input:checked {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+    .list-group-item.active {
+        background-color: rgba(13, 110, 253, 0.1);
+        border-color: rgba(13, 110, 253, 0.2);
+        color: #0d6efd;
+    }
+
+    .pagination {
+        --bs-pagination-padding-x: 0.75rem;
+        --bs-pagination-padding-y: 0.375rem;
+        --bs-pagination-font-size: 0.9rem;
+        gap: 4px;
+    }
+
+    .page-link {
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+        min-width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.375rem 0.75rem;
+        color: #495057;
+        text-decoration: none;
+    }
+
+    .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: white;
+    }
+
+    .rating-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .rating-stars {
+        display: flex;
+        align-items: center;
+    }
+
+    .text-truncate {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .stat-box {
+        min-height: 60px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    @@media (max-width: 768px) {
+        .sticky-sidebar {
+            position: static;
+            margin-bottom: 1rem;
+            max-height: none;
+        }
+
+        .row-cols-md-2 > .col {
+            width: 100%;
+        }
+
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .pagination {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .page-item {
+            margin-bottom: 0.25rem;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .container-fluid {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+
+        .card-body {
+            padding: 1rem !important;
+        }
+
+        .h5 {
+            font-size: 1.1rem;
+        }
+
+        .pagination {
+            --bs-pagination-font-size: 0.85rem;
+        }
+
+        .page-link {
+            min-width: 36px;
+            height: 36px;
+            padding: 0.3rem 0.6rem;
+        }
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .view-content {
+        transition: opacity 0.3s ease;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log("Script de filtros carregado");
+
+            // ============================================
+            // 1. FILTROS DE RATING (TIPO AMAZON/BOOKING)
+            // ============================================
+            document.querySelectorAll('.rating-filter').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const value = this.getAttribute('data-value');
+                    console.log(`Filtro de rating selecionado: ${value}`);
+
+                    // Ativar item selecionado
+                    document.querySelectorAll('.rating-filter').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    this.classList.add('active');
+
+                    // Marcar radio button correspondente
+                    const radioId = value ? `rating${value}` : 'ratingAll';
+                    const radio = document.getElementById(radioId);
+                    if (radio) {
+                        radio.checked = true;
+                    }
+
+                    // Atualizar hidden input
+                    document.getElementById('ratingValue').value = value;
+
+                    // Não submeter automaticamente - usuário precisa clicar em "Aplicar Filtros"
+                });
+            });
+
+            // ============================================
+            // 2. LIMPAR FILTROS
+            // ============================================
+            document.getElementById('clearFilters').addEventListener('click', function() {
+                console.log("Limpando filtros...");
+
+                // Limpar inputs
+                document.getElementById('categoriaSelect').value = '';
+                document.getElementById('localizacaoInput').value = '';
+                document.getElementById('termoInput').value = '';
+                document.getElementById('precoMinInput').value = '';
+                document.getElementById('precoMaxInput').value = '';
+                document.getElementById('premium-only').checked = false;
+
+                // Limpar rating
+                document.getElementById('ratingValue').value = '';
+                document.querySelectorAll('.rating-filter').forEach(item => {
+                    item.classList.remove('active');
+                });
+                document.querySelector('.rating-filter[data-value=""]').classList.add('active');
+                document.getElementById('ratingAll').checked = true;
+
+                // Resetar página
+                document.getElementById('paginaInput').value = '1';
+
+                // Submeter form
+                document.getElementById('filterForm').submit();
+            });
+
+            // ============================================
+            // 3. VALIDAÇÃO DE PREÇOS
+            // ============================================
+            const precoMinInput = document.getElementById('precoMinInput');
+            const precoMaxInput = document.getElementById('precoMaxInput');
+
+            function validarPrecos() {
+                const min = parseInt(precoMinInput.value) || 0;
+                const max = parseInt(precoMaxInput.value) || 0;
+
+                if (min > 0 && max > 0 && min > max) {
+                    alert('O preço mínimo não pode ser maior que o máximo');
+                    precoMinInput.value = '';
+                    precoMaxInput.value = '';
+                    return false;
+                }
+
+                if (min < 0) precoMinInput.value = 0;
+                if (max < 0) precoMaxInput.value = 0;
+
+                return true;
+            }
+
+            precoMinInput.addEventListener('change', validarPrecos);
+            precoMaxInput.addEventListener('change', validarPrecos);
+
+            // ============================================
+            // 4. ORDENAÇÃO
+            // ============================================
+            document.querySelectorAll('[data-sort]').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const sortBy = this.getAttribute('data-sort');
+                    console.log(`Ordenando por: ${sortBy}`);
+
+                    // Adicionar parâmetro de ordenação ao form
+                    const form = document.getElementById('filterForm');
+                    let sortInput = document.getElementById('sortInput');
+
+                    if (!sortInput) {
+                        sortInput = document.createElement('input');
+                        sortInput.type = 'hidden';
+                        sortInput.name = 'sort';
+                        sortInput.id = 'sortInput';
+                        form.appendChild(sortInput);
+                    }
+
+                    sortInput.value = sortBy;
+                    document.getElementById('paginaInput').value = '1';
+                    form.submit();
+                });
+            });
+
+            // ============================================
+            // 5. MODOS DE VISUALIZAÇÃO
+            // ============================================
+            document.querySelectorAll('.view-mode').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const mode = this.getAttribute('data-mode');
+                    console.log(`Modo de visualização: ${mode}`);
+
+                    // Ativa/desativa botão
+                    document.querySelectorAll('.view-mode').forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    this.classList.add('active');
+
+                    // Mostra/esconde visualizações
+                    if (mode === 'grid') {
+                        document.getElementById('gridView').classList.remove('d-none');
+                        document.getElementById('listView').classList.add('d-none');
+                    } else {
+                        document.getElementById('gridView').classList.add('d-none');
+                        document.getElementById('listView').classList.remove('d-none');
+                    }
+                });
+            });
+
+            // ============================================
+            // 6. PAGINAÇÃO
+            // ============================================
+            document.querySelectorAll('.page-link').forEach(link => {
+                if (!link.classList.contains('disabled')) {
+                    link.addEventListener('click', function(e) {
+                        if (this.getAttribute('href')) {
+                            const url = new URL(this.href);
+                            const pagina = url.searchParams.get('pagina');
+                            if (pagina) {
+                                document.getElementById('paginaInput').value = pagina;
+                                e.preventDefault();
+                                document.getElementById('filterForm').submit();
+                            }
+                        }
+                    });
+                }
+            });
+
+            // ============================================
+            // 7. APLICAR FILTROS
+            // ============================================
+            document.getElementById('applyFilters').addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log("Aplicando filtros...");
+
+                // Validar preços
+                if (!validarPrecos()) {
+                    return;
+                }
+
+                // Resetar para página 1 ao aplicar novos filtros
+                document.getElementById('paginaInput').value = '1';
+
+                // Mostrar loading
+                const originalText = this.innerHTML;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Aplicando...';
+                this.disabled = true;
+
+                // Submeter form
+                setTimeout(() => {
+                    document.getElementById('filterForm').submit();
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }, 500);
+            });
+
+            // ============================================
+            // 8. FILTRO RÁPIDO POR RATING (seleção automática)
+            // ============================================
+            // Se clicar no checkbox, também ativa o item
+            document.querySelectorAll('input[name="ratingRadio"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const parent = this.closest('.rating-filter');
+                    if (parent && this.checked) {
+                        // Ativar visualmente
+                        document.querySelectorAll('.rating-filter').forEach(item => {
+                            item.classList.remove('active');
+                        });
+                        parent.classList.add('active');
+
+                        // Atualizar hidden input
+                        const value = parent.getAttribute('data-value');
+                        document.getElementById('ratingValue').value = value;
+                        console.log(`Rating selecionado via radio: ${value}`);
+                    }
+                });
+            });
+
+            console.log("Script de filtros inicializado com sucesso");
+        });
+
+        // ============================================
+        // FUNÇÕES AUXILIARES
+        // ============================================
+        function applyFilters() {
+            const form = document.getElementById('filterForm');
+            const formData = new FormData(form);
+            const params = new URLSearchParams(formData);
+
+            console.log("Parâmetros da busca:", params.toString());
+            window.location.href = `/Home/Procurar?${params.toString()}`;
+        }
+
+        function sortProfissionais(sortBy) {
+            console.log(`Ordenando localmente por: ${sortBy}`);
+
+            const cards = Array.from(document.querySelectorAll('[data-profissional]'));
+
+            cards.sort((a, b) => {
+                const aPremium = a.dataset.premium === 'true';
+                const bPremium = b.dataset.premium === 'true';
+                const aAvaliacao = parseFloat(a.dataset.avaliacao) || 0;
+                const bAvaliacao = parseFloat(b.dataset.avaliacao) || 0;
+                const aPreco = parseFloat(a.dataset.preco) || 0;
+                const bPreco = parseFloat(b.dataset.preco) || 0;
+
+                switch(sortBy) {
+                    case 'avaliacao':
+                        return bAvaliacao - aAvaliacao;
+                    case 'preco-asc':
+                        return aPreco - bPreco;
+                    case 'preco-desc':
+                        return bPreco - aPreco;
+                    case 'premium':
+                        if (aPremium && !bPremium) return -1;
+                        if (!aPremium && bPremium) return 1;
+                        return bAvaliacao - aAvaliacao;
+                    default:
+                        return 0;
+                }
+            });
+
+            const container = document.getElementById('gridView');
+            container.innerHTML = '';
+            cards.forEach(card => container.appendChild(card));
+        }
+    </script>
+}

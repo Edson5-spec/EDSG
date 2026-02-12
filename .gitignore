@@ -1,0 +1,16 @@
+# .NET / Visual Studio
+bin/
+obj/
+*.csproj.user
+*.suo
+*.user
+*.sln.docstates
+*.cache
+*.vs/
+.vs/
+*.vscode/
+appsettings.*.json
+# não comitar a base de dados local
+*.mdf
+*.ldf
+edsg.mdf   # ou o nome que tiveres

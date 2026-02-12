@@ -1,0 +1,105 @@
+﻿@using EDSG.Models
+@model NovoServicoViewModel
+@{
+    ViewData["Title"] = "Solicitar Serviço";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Solicitar Novo Serviço</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Professional Info -->
+                    <div class="alert alert-info mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-person-circle display-6"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="alert-heading">Profissional: @Model.ProfissionalNome</h6>
+                                <p class="mb-1"><strong>Categoria:</strong> @Model.ProfissionalCategoria</p>
+                                @if (Model.PrecoSugerido > 0) {
+                                    <p class="mb-0"><strong>Preço Base Sugerido:</strong> €@Model.PrecoSugerido.ToString("F2")</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <form asp-controller="Dashboard" asp-action="NovoServico" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="ProfissionalId" />
+                        <input type="hidden" asp-for="ProfissionalNome" />
+                        <input type="hidden" asp-for="ProfissionalCategoria" />
+                        <input type="hidden" asp-for="PrecoSugerido" />
+
+                        <div class="mb-3">
+                            <label asp-for="Titulo" class="form-label">Título do Serviço *</label>
+                            <input asp-for="Titulo" class="form-control"
+                                   placeholder="Ex: Reparação de computador" />
+                            <div class="form-text">Um título claro e descritivo do serviço que precisa.</div>
+                            <span asp-validation-for="Titulo" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Descricao" class="form-label">Descrição Detalhada *</label>
+                            <textarea asp-for="Descricao" class="form-control" rows="6"
+                                      placeholder="Descreva em detalhe o que precisa, incluindo requisitos específicos, prazos, etc."></textarea>
+                            <div class="form-text">Quanto mais detalhes fornecer, melhor o profissional poderá ajudar.</div>
+                            <span asp-validation-for="Descricao" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Categoria" class="form-label">Categoria</label>
+                                <input asp-for="Categoria" class="form-control"
+                                       value="@Model.ProfissionalCategoria"
+                                       placeholder="Ex: Informática, Limpezas, etc." />
+                                <span asp-validation-for="Categoria" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Localizacao" class="form-label">Localização</label>
+                                <input asp-for="Localizacao" class="form-control"
+                                       placeholder="Ex: Lisboa, Portugal" />
+                                <span asp-validation-for="Localizacao" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Preco" class="form-label">Preço Acordado (€) *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">€</span>
+                                <input asp-for="Preco" class="form-control" type="number" step="0.01" min="0" max="10000"
+                                       value="@(Model.PrecoSugerido > 0 ? Model.PrecoSugerido : "")" />
+                            </div>
+                            @if (Model.PrecoSugerido > 0) {
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle"></i>
+                                    Preço base sugerido pelo profissional: €@Model.PrecoSugerido.ToString("F2")
+                                </div>
+                            }
+                            <span asp-validation-for="Preco" class="text-danger"></span>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>Aviso:</strong> Após enviar o pedido, o profissional terá 7 dias para aceitar ou recusar.
+                            Poderá editar ou cancelar o pedido enquanto estiver pendente.
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a asp-controller="Home" asp-action="DetalhesProfissional" asp-route-id="@Model.ProfissionalId"
+                               class="btn btn-secondary me-md-2">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send"></i> Enviar Pedido de Serviço
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

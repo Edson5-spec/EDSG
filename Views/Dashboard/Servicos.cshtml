@@ -1,0 +1,269 @@
+﻿@model List<EDSG.Models.Servico>
+@{
+    ViewData["Title"] = "Meus Serviços";
+    var modo = ViewBag.Modo;
+    var isProfissional = modo == "Profissional";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Serviços</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-briefcase text-primary"></i> 
+                    @(isProfissional ? "Serviços como Profissional" : "Meus Serviços")
+                </h1>
+                
+                @if (!isProfissional)
+                {
+                    <a asp-controller="Home" asp-action="Procurar" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Novo Serviço
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label">Filtrar por Estado:</label>
+                            <select class="form-select" id="estadoFilter">
+                                <option value="">Todos os Estados</option>
+                                <option value="Pendente">Pendente</option>
+                                <option value="Aceite">Aceite</option>
+                                <option value="EmProgresso">Em Progresso</option>
+                                <option value="Concluido">Concluído</option>
+                                <option value="Cancelado">Cancelado</option>
+                                <option value="Recusado">Recusado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label">Ordenar por:</label>
+                            <select class="form-select" id="ordenarPor">
+                                <option value="dataDesc">Data (Mais Recente)</option>
+                                <option value="dataAsc">Data (Mais Antigo)</option>
+                                <option value="precoDesc">Preço (Maior)</option>
+                                <option value="precoAsc">Preço (Menor)</option>
+                                <option value="titulo">Título (A-Z)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-2 d-flex align-items-end">
+                            <button class="btn btn-outline-secondary w-100" id="btnFiltrar">
+                                <i class="bi bi-funnel"></i> Aplicar Filtros
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Services List -->
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="servicosTable">
+                                <thead>
+                                    <tr>
+                                        <th>Título</th>
+                                        <th>@(isProfissional ? "Cliente" : "Profissional")</th>
+                                        <th>Estado</th>
+                                        <th>Data</th>
+                                        <th>Preço</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var servico in Model)
+                                    {
+                                        <tr data-estado="@servico.Estado" 
+                                            data-data="@servico.DataPedido.ToString("yyyy-MM-dd")"
+                                            data-preco="@servico.PrecoAcordado"
+                                            data-titulo="@servico.Titulo.ToLower()">
+                                            <td>
+                                                <strong>@servico.Titulo</strong>
+                                                @if (!string.IsNullOrEmpty(servico.Categoria))
+                                                {
+                                                    <br />
+                                                    <small class="text-muted">@servico.Categoria</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (isProfissional)
+                                                {
+                                                    @servico.Cliente.Nome
+                                                }
+                                                else
+                                                {
+                                                    @servico.Profissional.Nome
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="badge @GetEstadoBadgeClass(servico.Estado)">
+                                                    @servico.Estado
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @servico.DataPedido.ToString("dd/MM/yyyy")
+                                                @if (servico.DataConclusao.HasValue)
+                                                {
+                                                    <br />
+                                                    <small class="text-muted">Concluído: @servico.DataConclusao.Value.ToString("dd/MM/yyyy")</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                <strong class="text-primary">€@servico.PrecoAcordado.ToString("F2")</strong>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a asp-controller="Dashboard" asp-action="DetalhesServico" asp-route-id="@servico.Id" 
+                                                       class="btn btn-outline-primary">
+                                                        <i class="bi bi-eye"></i> Ver
+                                                    </a>
+                                                    
+                                                    @if (servico.Estado == EstadoServico.Pendente && !isProfissional)
+                                                    {
+                                                        <a asp-controller="Dashboard" asp-action="EditarServico" asp-route-id="@servico.Id" 
+                                                           class="btn btn-outline-warning">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </a>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox display-1 text-muted"></i>
+                            <h4 class="mt-3">Nenhum serviço encontrado</h4>
+                            <p class="text-muted">
+                                @(isProfissional ? 
+                                    "Não tem serviços atribuídos." : 
+                                    "Ainda não solicitou nenhum serviço.")
+                            </p>
+                            @if (!isProfissional)
+                            {
+                                <a asp-controller="Home" asp-action="Procurar" class="btn btn-primary mt-3">
+                                    <i class="bi bi-search"></i> Procurar Profissionais
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetEstadoBadgeClass(EstadoServico estado)
+    {
+        return estado switch
+        {
+            EstadoServico.Pendente => "bg-warning",
+            EstadoServico.Aceite => "bg-primary",
+            EstadoServico.EmProgresso => "bg-info",
+            EstadoServico.Concluido => "bg-success",
+            EstadoServico.Recusado => "bg-secondary",
+            EstadoServico.Cancelado => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const estadoFilter = document.getElementById('estadoFilter');
+            const ordenarPor = document.getElementById('ordenarPor');
+            const btnFiltrar = document.getElementById('btnFiltrar');
+            const rows = document.querySelectorAll('#servicosTable tbody tr');
+
+            function aplicarFiltros() {
+                const estado = estadoFilter.value;
+                const ordem = ordenarPor.value;
+                let filteredRows = Array.from(rows);
+
+                // Filtrar por estado
+                if (estado) {
+                    filteredRows = filteredRows.filter(row => row.dataset.estado === estado);
+                }
+
+                // Ordenar
+                filteredRows.sort((a, b) => {
+                    switch (ordem) {
+                        case 'dataDesc':
+                            return new Date(b.dataset.data) - new Date(a.dataset.data);
+                        case 'dataAsc':
+                            return new Date(a.dataset.data) - new Date(b.dataset.data);
+                        case 'precoDesc':
+                            return parseFloat(b.dataset.preco) - parseFloat(a.dataset.preco);
+                        case 'precoAsc':
+                            return parseFloat(a.dataset.preco) - parseFloat(b.dataset.preco);
+                        case 'titulo':
+                            return a.dataset.titulo.localeCompare(b.dataset.titulo);
+                        default:
+                            return 0;
+                    }
+                });
+
+                // Atualizar tabela
+                const tbody = document.querySelector('#servicosTable tbody');
+                tbody.innerHTML = '';
+                filteredRows.forEach(row => tbody.appendChild(row));
+
+                // Mostrar mensagem se não houver resultados
+                if (filteredRows.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <i class="bi bi-search display-1 text-muted"></i>
+                                <p class="mt-3">Nenhum serviço encontrado com os filtros aplicados.</p>
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+
+            btnFiltrar.addEventListener('click', aplicarFiltros);
+
+            // Aplicar filtros ao carregar se houver parâmetros na URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const estadoParam = urlParams.get('estado');
+            const ordenarParam = urlParams.get('ordenar');
+            
+            if (estadoParam) {
+                estadoFilter.value = estadoParam;
+            }
+            if (ordenarParam) {
+                ordenarPor.value = ordenarParam;
+            }
+            
+            if (estadoParam || ordenarParam) {
+                aplicarFiltros();
+            }
+        });
+    </script>
+}

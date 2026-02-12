@@ -1,0 +1,271 @@
+﻿@model EDSG.Controllers.ContactoViewModel
+@{
+    ViewData["Title"] = "Contactos";
+}
+
+<div class="container">
+    <div class="row mb-5">
+        <div class="col-lg-6">
+            <h1 class="display-4 fw-bold mb-4">Contacte-nos</h1>
+            <p class="lead mb-4">
+                Tem alguma dúvida, sugestão ou precisa de ajuda?
+                Estamos aqui para ajudar. Entre em contacto connosco.
+            </p>
+
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <i class="bi bi-envelope display-4 text-primary mb-3"></i>
+                            <h5 class="card-title">Email</h5>
+                            <p class="card-text">info@edsg.com</p>
+                            <a href="mailto:info@edsg.com" class="btn btn-outline-primary btn-sm">
+                                Enviar Email
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <i class="bi bi-telephone display-4 text-success mb-3"></i>
+                            <h5 class="card-title">Telefone</h5>
+                            <p class="card-text">+351 123 456 789</p>
+                            <a href="tel:+351123456789" class="btn btn-outline-success btn-sm">
+                                Ligar Agora
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="bi bi-clock"></i> Horário de Atendimento</h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="mb-1"><strong>Segunda - Sexta</strong></p>
+                            <p class="text-muted">9:00 - 18:00</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-1"><strong>Sábado</strong></p>
+                            <p class="text-muted">10:00 - 14:00</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-chat-dots"></i> Formulário de Contacto</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-controller="Home" asp-action="Contactos" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Nome" class="form-label"></label>
+                                <input asp-for="Nome" class="form-control" placeholder="Seu nome completo" />
+                                <span asp-validation-for="Nome" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" placeholder="seu@email.com" />
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Assunto" class="form-label"></label>
+                            <select asp-for="Assunto" class="form-select">
+                                <option value="">Selecione o assunto</option>
+                                <option value="Suporte Técnico">Suporte Técnico</option>
+                                <option value="Dúvida sobre Serviços">Dúvida sobre Serviços</option>
+                                <option value="Parcerias">Parcerias</option>
+                                <option value="Sugestões">Sugestões</option>
+                                <option value="Outro">Outro</option>
+                            </select>
+                            <span asp-validation-for="Assunto" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Mensagem" class="form-label"></label>
+                            <textarea asp-for="Mensagem" class="form-control" rows="5"
+                                      placeholder="Descreva sua mensagem aqui..."></textarea>
+                            <span asp-validation-for="Mensagem" class="text-danger small"></span>
+                            <div class="form-text">Máximo 5000 caracteres</div>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="newsletter" checked>
+                            <label class="form-check-label" for="newsletter">
+                                Desejo receber novidades e atualizações da EDSG
+                            </label>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-send"></i> Enviar Mensagem
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-5">Perguntas Frequentes</h2>
+            <div class="accordion" id="faqAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                            Como me registro como profissional?
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Basta clicar em "Registar" no menu superior, preencher seus dados e selecionar a opção
+                            "Sou Profissional". Complete seu perfil com informações detalhadas sobre seus serviços,
+                            experiência e portfólio.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                            Quanto custa usar a plataforma?
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            A plataforma é gratuita para clientes. Profissionais podem usar a versão básica gratuitamente
+                            ou optar pelo plano Premium para recursos adicionais como destaque nos resultados e
+                            estatísticas avançadas.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                            Como são processados os pagamentos?
+                        </button>
+                    </h2>
+                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Os pagamentos são combinados diretamente entre cliente e profissional. A EDSG não
+                            processa pagamentos, mas oferece um sistema seguro de mensagens para negociação e
+                            documentação dos acordos.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                            O que fazer em caso de problemas com um serviço?
+                        </button>
+                    </h2>
+                    <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Primeiro tente resolver diretamente com o profissional. Se não conseguir, utilize nosso
+                            sistema de denúncias. Nossa equipa de suporte analisará cada caso e tomará as medidas
+                            apropriadas para garantir a qualidade dos serviços.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Office Location -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h4 class="mb-0"><i class="bi bi-geo-alt"></i> Nossa Localização</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>EDSG - Lisboa</h5>
+                            <p class="mb-2">
+                                <i class="bi bi-geo-alt-fill text-primary"></i>
+                                Av. da Liberdade 245, 1250-143 Lisboa
+                            </p>
+                            <p class="mb-2">
+                                <i class="bi bi-telephone text-success"></i>
+                                +351 123 456 789
+                            </p>
+                            <p class="mb-4">
+                                <i class="bi bi-envelope text-info"></i>
+                                lisboa@edsg.com
+                            </p>
+
+                            <h6 class="mb-3">Transportes Públicos</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-1"><i class="bi bi-subway"></i> Metro: Avenida (Linha Azul)</li>
+                                <li class="mb-1"><i class="bi bi-bus-front"></i> Autocarros: 709, 711, 732</li>
+                                <li><i class="bi bi-train-front"></i> Comboio: Rossio</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <!-- Map placeholder -->
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                                 style="height: 300px;">
+                                <div class="text-center">
+                                    <i class="bi bi-map display-1 text-muted"></i>
+                                    <p class="mt-3">Mapa da Localização</p>
+                                    <p class="small text-muted">(Integração com Google Maps disponível)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        // Form submission feedback
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Enviando...';
+
+            // Simulate API call
+            setTimeout(() => {
+                submitButton.innerHTML = originalText;
+                submitButton.disabled = false;
+            }, 2000);
+        });
+
+        // FAQ accordion
+        document.querySelectorAll('.accordion-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const icon = this.querySelector('.bi');
+                if (icon) {
+                    if (this.classList.contains('collapsed')) {
+                        icon.className = 'bi bi-chevron-down me-2';
+                    } else {
+                        icon.className = 'bi bi-chevron-up me-2';
+                    }
+                }
+            });
+        });
+    </script>
+}

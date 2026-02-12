@@ -1,0 +1,265 @@
+﻿@model EDSG.Controllers.RegisterViewModel
+@{
+    ViewData["Title"] = "Registar";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-primary text-white text-center py-4">
+                <h2><i class="bi bi-person-plus"></i> Criar Nova Conta</h2>
+                <p class="mb-0">Registe-se gratuitamente e comece a usar a plataforma</p>
+            </div>
+            <div class="card-body p-5">
+                <!-- Formulário de registro normal -->
+                <form asp-controller="Account" asp-action="Register" method="post" id="registerForm">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label asp-for="Nome" class="form-label fw-bold">Nome Completo</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-person"></i>
+                            </span>
+                            <input asp-for="Nome" class="form-control" placeholder="Introduza o seu nome completo" />
+                        </div>
+                        <span asp-validation-for="Nome" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-bold">Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-envelope"></i>
+                            </span>
+                            <input asp-for="Email" class="form-control" placeholder="exemplo@email.com" />
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Localizacao" class="form-label fw-bold">Localização</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-geo-alt"></i>
+                            </span>
+                            <input asp-for="Localizacao" class="form-control" placeholder="Ex: Lisboa, Porto, etc." />
+                        </div>
+                        <span asp-validation-for="Localizacao" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Password" class="form-label fw-bold">Palavra-passe</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-lock"></i>
+                                </span>
+                                <input asp-for="Password" type="password" class="form-control" placeholder="Mínimo 6 caracteres" id="password" />
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ConfirmPassword" class="form-label fw-bold">Confirmar Palavra-passe</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-lock-fill"></i>
+                                </span>
+                                <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Repita a palavra-passe" id="confirmPassword" />
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirmPassword', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                            <div id="passwordMatch" class="form-text small"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="terms" required>
+                        <label class="form-check-label" for="terms">
+                            Concordo com os <a href="#" class="text-primary text-decoration-none">Termos de Serviço</a> e <a href="#" class="text-primary text-decoration-none">Política de Privacidade</a>
+                        </label>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-person-plus me-2"></i> Criar Conta
+                        </button>
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-secondary">
+                            Já tem uma conta? Iniciar Sessão
+                        </a>
+                    </div>
+                </form>
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <p class="text-muted mb-2">Ou registe-se com</p>
+
+                    <!-- BOTÃO GOOGLE SIMPLIFICADO -->
+                    <form method="post" asp-controller="Account" asp-action="ExternalLogin" id="googleRegisterForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="provider" value="Google" />
+                        <button type="submit" class="btn btn-outline-danger btn-lg w-100" id="googleRegisterBtn">
+                            <i class="bi bi-google me-2"></i> Google
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Benefits -->
+        <div class="row mt-4">
+            <div class="col-md-4 mb-3">
+                <div class="card border-0 bg-light h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-shield-check text-primary display-6"></i>
+                        <h6 class="card-title mt-2 fw-bold">Seguro</h6>
+                        <p class="card-text small">Dados protegidos e encriptados</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card border-0 bg-light h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-clock-history text-primary display-6"></i>
+                        <h6 class="card-title mt-2 fw-bold">Rápido</h6>
+                        <p class="card-text small">Registo em menos de 2 minutos</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card border-0 bg-light h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-coin text-primary display-6"></i>
+                        <h6 class="card-title mt-2 fw-bold">Gratuito</h6>
+                        <p class="card-text small">Sem custos de registo</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function togglePassword(inputId, button) {
+            const input = document.getElementById(inputId);
+            const icon = button.querySelector('i');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+
+        // Password match validation
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const passwordMatch = document.getElementById('passwordMatch');
+
+        function checkPasswordMatch() {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            if (confirmPassword === '') {
+                passwordMatch.textContent = '';
+                passwordMatch.className = 'form-text small';
+            } else if (password === confirmPassword) {
+                passwordMatch.textContent = '✓ As palavras-passe coincidem';
+                passwordMatch.className = 'form-text small text-success';
+            } else {
+                passwordMatch.textContent = '✗ As palavras-passe não coincidem';
+                passwordMatch.className = 'form-text small text-danger';
+            }
+        }
+
+        passwordInput.addEventListener('input', checkPasswordMatch);
+        confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+
+        // Form submission
+        const form = document.getElementById('registerForm');
+        const submitButton = form.querySelector('button[type="submit"]');
+
+        form.addEventListener('submit', function(e) {
+            const termsCheckbox = document.getElementById('terms');
+            if (!termsCheckbox.checked) {
+                e.preventDefault();
+                alert('Por favor, aceite os Termos de Serviço e Política de Privacidade para continuar.');
+                termsCheckbox.focus();
+                return;
+            }
+
+            // Show loading state
+            const originalText = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> A processar...';
+
+            // Restore button after 5 seconds (in case of error)
+            setTimeout(() => {
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
+            }, 5000);
+        });
+
+        // Google registration form submission
+        document.getElementById('googleRegisterForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const googleBtn = document.getElementById('googleRegisterBtn');
+            const originalText = googleBtn.innerHTML;
+
+            // Mostrar loading
+            googleBtn.disabled = true;
+            googleBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> A processar...';
+
+            // Submeter o formulário
+            this.submit();
+
+            // Restaurar botão após 3 segundos (caso algo falhe)
+            setTimeout(() => {
+                googleBtn.disabled = false;
+                googleBtn.innerHTML = originalText;
+            }, 3000);
+        });
+
+        // Auto-dismiss alerts
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+}

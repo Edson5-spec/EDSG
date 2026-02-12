@@ -1,0 +1,95 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using EDSG.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@{
+    var user = await UserManager.GetUserAsync(User);
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    var isProfessionalMode = Context.Session.GetString("DashboardMode") == "Profissional";
+}
+
+@switch (controller) {
+    case "Home" when action == "Index":
+    <a class="btn btn-outline-primary btn-sm" asp-controller="Home" asp-action="Procurar">
+        <i class="bi bi-search"></i>
+        <span class="d-block small">Procurar</span>
+    </a>
+    <a class="btn btn-outline-success btn-sm" asp-controller="Dashboard" asp-action="Index">
+        <i class="bi bi-speedometer2"></i>
+        <span class="d-block small">Dashboard</span>
+    </a>
+    @if (user?.Categoria != null) {
+        <a class="btn btn-outline-info btn-sm" asp-controller="Account" asp-action="Profile">
+            <i class="bi bi-person"></i>
+            <span class="d-block small">Perfil</span>
+        </a>
+    }
+    break;
+
+    case "Home" when action == "Procurar":
+    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#filterModal">
+        <i class="bi bi-funnel"></i>
+        <span class="d-block small">Filtros</span>
+    </button>
+    <a class="btn btn-outline-success btn-sm" asp-controller="Dashboard" asp-action="Favoritos">
+        <i class="bi bi-heart"></i>
+        <span class="d-block small">Favoritos</span>
+    </a>
+    <button class="btn btn-outline-info btn-sm" onclick="sharePage()">
+        <i class="bi bi-share"></i>
+        <span class="d-block small">Partilhar</span>
+    </button>
+    break;
+
+    case "Dashboard":
+    <a class="btn btn-outline-primary btn-sm" asp-controller="Dashboard"
+       asp-action="@(isProfessionalMode ? "Servicos" : "Favoritos")">
+        <i class="bi @(isProfessionalMode ? "bi-briefcase" : "bi-heart")"></i>
+        <span class="d-block small">@(isProfessionalMode ? "Serviços" : "Favoritos")</span>
+    </a>
+    <a class="btn btn-outline-success btn-sm" asp-controller="Dashboard" asp-action="Mensagens">
+        <i class="bi bi-chat-dots"></i>
+        <span class="d-block small">Mensagens</span>
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="mobileUnreadCount">0</span>
+    </a>
+    <a class="btn btn-outline-info btn-sm" asp-controller="Dashboard" asp-action="SwitchMode"
+       asp-route-mode="@(isProfessionalMode ? "Cliente" : "Profissional")">
+        <i class="bi @(isProfessionalMode ? "bi-person" : "bi-briefcase")"></i>
+        <span class="d-block small">Modo</span>
+    </a>
+    break;
+
+    case "Premium":
+    if (user?.IsPremium == true) {
+        <a class="btn btn-outline-warning btn-sm" asp-controller="Premium" asp-action="Manage">
+            <i class="bi bi-credit-card"></i>
+            <span class="d-block small">Gerir</span>
+        </a>
+        <a class="btn btn-outline-success btn-sm" asp-controller="Dashboard" asp-action="Index">
+            <i class="bi bi-graph-up"></i>
+            <span class="d-block small">Stats</span>
+        </a>
+    } else {
+        <a class="btn btn-warning btn-sm" asp-controller="Premium" asp-action="Upgrade">
+            <i class="bi bi-star"></i>
+            <span class="d-block small">Premium</span>
+        </a>
+    }
+    break;
+
+    default:
+    <a class="btn btn-outline-primary btn-sm" asp-controller="Home" asp-action="Procurar">
+        <i class="bi bi-search"></i>
+        <span class="d-block small">Procurar</span>
+    </a>
+    <a class="btn btn-outline-success btn-sm" asp-controller="Dashboard" asp-action="Index">
+        <i class="bi bi-speedometer2"></i>
+        <span class="d-block small">Dashboard</span>
+    </a>
+    <a class="btn btn-outline-info btn-sm" asp-controller="Account" asp-action="Profile">
+        <i class="bi bi-person"></i>
+        <span class="d-block small">Perfil</span>
+    </a>
+    break;
+}

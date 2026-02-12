@@ -1,0 +1,31 @@
+﻿@model List<EDSG.Models.Mensagem>
+@{
+    var usuarioId = ViewBag.UsuarioId as string;
+}
+
+@if (Model != null && Model.Any()) {
+    foreach (var mensagem in Model) {
+        var isRemetente = mensagem.RemetenteId == usuarioId;
+        <div class="d-flex mb-3 @(isRemetente ? "justify-content-end" : "justify-content-start")">
+            <div class="message-bubble @(isRemetente ? "message-sent" : "message-received")">
+                <div>@mensagem.Texto</div>
+                <div class="message-time">
+                    @mensagem.DataEnvio.ToLocalTime().ToString("dd/MM HH:mm")
+                    @if (mensagem.IsLida && isRemetente) {
+                        <i class="bi bi-check-all ms-1"></i>
+                    } else if (isRemetente) {
+                        <i class="bi bi-check ms-1"></i>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+} else {
+    <div class="text-center py-5">
+        <div class="mb-3">
+            <i class="bi bi-chat-left-text display-1 text-muted"></i>
+        </div>
+        <h5>Nenhuma mensagem</h5>
+        <p class="text-muted">Envie a primeira mensagem para iniciar a conversa</p>
+    </div>
+}

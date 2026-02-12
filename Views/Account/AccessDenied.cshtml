@@ -1,0 +1,134 @@
+﻿@{
+    ViewData["Title"] = "Acesso Negado";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-body text-center p-5">
+                    <!-- Error Icon -->
+                    <div class="mb-4">
+                        <div class="error-icon mx-auto">
+                            <i class="bi bi-shield-lock display-1 text-danger"></i>
+                        </div>
+                    </div>
+
+                    <!-- Error Title -->
+                    <h1 class="display-5 fw-bold text-danger mb-3">Acesso Negado</h1>
+
+                    <!-- Error Message -->
+                    <div class="alert alert-danger mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+                            <div>
+                                <h5 class="alert-heading mb-2">Permissões Insuficientes</h5>
+                                <p class="mb-0">
+                                    Você não tem permissão para aceder a este recurso.
+                                    Este conteúdo pode ser restrito ou exigir privilégios adicionais.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Possible Reasons -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="bi bi-question-circle"></i> Possíveis Razões</h5>
+                        </div>
+                        <div class="card-body text-start">
+                            <ul class="mb-0">
+                                <li class="mb-2">Sua conta não tem permissões necessárias</li>
+                                <li class="mb-2">O recurso pode ser privado ou exclusivo</li>
+                                <li class="mb-2">Sua sessão pode ter expirado</li>
+                                <li>Pode necessitar de autenticação adicional</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-3">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg">
+                            <i class="bi bi-house-door"></i> Voltar ao Início
+                        </a>
+
+                        @if (User.Identity.IsAuthenticated) {
+                            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-primary">
+                                <i class="bi bi-speedometer2"></i> Ir para Dashboard
+                            </a>
+
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="d-grid">
+                                <button type="submit" class="btn btn-outline-danger">
+                                    <i class="bi bi-box-arrow-right"></i> Terminar Sessão e Tentar Novamente
+                                </button>
+                            </form>
+                        } else {
+                            <a asp-controller="Account" asp-action="Login" class="btn btn-success">
+                                <i class="bi bi-box-arrow-in-right"></i> Iniciar Sessão
+                            </a>
+                            <a asp-controller="Account" asp-action="Register" class="btn btn-outline-success">
+                                <i class="bi bi-person-plus"></i> Criar Nova Conta
+                            </a>
+                        }
+                    </div>
+
+                    <!-- Support Information -->
+                    <div class="mt-5 pt-4 border-top">
+                        <p class="text-muted mb-3">
+                            Se acredita que isto é um erro ou necessita de acesso especial:
+                        </p>
+                        <div class="d-flex flex-wrap justify-content-center gap-3">
+                            <a asp-controller="Home" asp-action="Contactos" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-envelope"></i> Contactar Suporte
+                            </a>
+                            <a href="mailto:support@edsg.com" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-headset"></i> Email de Suporte
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Help -->
+            <div class="text-center mt-4">
+                <div class="row justify-content-center">
+                    <div class="col-md-10">
+                        <div class="alert alert-info">
+                            <div class="d-flex">
+                                <i class="bi bi-info-circle-fill me-3 mt-1"></i>
+                                <div>
+                                    <h6 class="alert-heading">Precisa de Ajuda?</h6>
+                                    <p class="small mb-0">
+                                        Consulte nossa <a asp-controller="Home" asp-action="Sobre" class="alert-link">página de ajuda</a>
+                                        ou entre em contacto com nossa equipa de suporte para assistência.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .error-icon {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(220, 53, 69, 0.2));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+
+    .card {
+        border-radius: 1rem;
+    }
+
+    .btn-lg {
+        padding: 0.75rem 2rem;
+    }
+</style>

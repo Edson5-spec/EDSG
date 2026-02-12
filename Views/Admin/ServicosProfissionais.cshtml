@@ -1,0 +1,453 @@
+﻿@model List<EDSG.Models.ServicoProfissional>
+@{
+    ViewData["Title"] = "Serviços Profissionais";
+    var activeCount = Model.Count(sp => sp.IsAtivo);
+    var inactiveCount = Model.Count(sp => !sp.IsAtivo);
+}
+
+@functions {
+    string Truncate(string text, int length) {
+        if (string.IsNullOrEmpty(text)) return text;
+        return text.Length > length ? text.Substring(0, length - 1) + "..." : text;
+    }
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3 mb-2">
+                <i class="bi bi-briefcase-fill text-info me-2"></i>Serviços Profissionais
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Serviços Profissionais</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#newServiceModal">
+                <i class="bi bi-plus-circle me-1"></i> Novo Serviço
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light py-3">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros Avançados</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label">Pesquisar</label>
+                    <input type="text" class="form-control" name="search"
+                           placeholder="Nome, descrição ou profissional" value="@ViewBag.Search">
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Categoria</label>
+                    <select class="form-select" name="categoria">
+                        <option value="">Todas as categorias</option>
+                        @foreach (var category in Model.Select(sp => sp.Categoria).Distinct().OrderBy(c => c)) {
+                            if (!string.IsNullOrEmpty(category)) {
+                                <option value="@category" selected="@(ViewBag.Categoria == category)">
+                                    @category
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Estado</label>
+                    <select class="form-select" name="ativo">
+                        <option value="">Todos</option>
+                        <option value="true" selected="@(ViewBag.Ativo == true)">Ativos</option>
+                        <option value="false" selected="@(ViewBag.Ativo == false)">Inativos</option>
+                    </select>
+                </div>
+                <div class="col-lg-2 col-md-6 d-flex align-items-end">
+                    <div class="d-grid gap-2 w-100">
+                        <button type="submit" class="btn btn-info">
+                            <i class="bi bi-search"></i> Filtrar
+                        </button>
+                        <a asp-action="ServicosProfissionais" class="btn btn-outline-secondary">Limpar</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-info border-4 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-info text-uppercase mb-1">
+                                Total Serviços
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">@Model.Count</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-briefcase-fill text-info fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-success border-4 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-success text-uppercase mb-1">
+                                Serviços Ativos
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">@activeCount</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-check-circle-fill text-success fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-warning border-4 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-warning text-uppercase mb-1">
+                                Categorias Únicas
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">
+                                @Model.Select(sp => sp.Categoria).Distinct().Count()
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-tags-fill text-warning fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-primary border-4 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">
+                                Média de Preço
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">
+                                €@(Model.Any() ? Model.Average(sp => sp.Preco).ToString("F2") : "0,00")
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-currency-euro text-primary fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Services Table -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-grid-3x3-gap-fill me-2"></i>Catálogo de Serviços (@Model.Count)
+            </h5>
+            <div class="dropdown">
+                <button class="btn btn-outline-info btn-sm dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown">
+                    <i class="bi bi-gear"></i> Opções
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-arrow-clockwise"></i> Atualizar Todos</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-filetype-csv"></i> Exportar CSV</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-printer"></i> Imprimir Relatório</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (TempData["SuccessMessage"] != null) {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (!Model.Any()) {
+                <div class="text-center py-5">
+                    <div class="text-muted mb-4">
+                        <i class="bi bi-briefcase display-1"></i>
+                        <h4 class="mt-4">Nenhum serviço profissional encontrado</h4>
+                        <p class="mb-4">Comece por criar o primeiro serviço profissional.</p>
+                        <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#newServiceModal">
+                            <i class="bi bi-plus-circle me-1"></i> Criar Primeiro Serviço
+                        </button>
+                    </div>
+                </div>
+            } else {
+                <div class="row">
+                    @foreach (var service in Model.OrderByDescending(sp => sp.DataCriacao)) {
+                        <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+                            <div class="card h-100 border shadow-sm hover-shadow">
+                                <div class="card-header bg-white py-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="badge @(service.IsAtivo ? "bg-success" : "bg-secondary")">
+                                                @(service.IsAtivo ? "Ativo" : "Inativo")
+                                            </span>
+                                            @if (service.Preco > 0) {
+                                                <span class="badge bg-primary ms-1">
+                                                    €@service.Preco.ToString("F2")
+                                                </span>
+                                            }
+                                        </div>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary border-0"
+                                                    type="button" data-bs-toggle="dropdown">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a class="dropdown-item" href="#">
+                                                        <i class="bi bi-eye text-primary"></i> Visualizar
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="#">
+                                                        <i class="bi bi-pencil text-info"></i> Editar
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <form asp-action="ToggleServicoProfissionalStatus" method="post">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@service.Id" />
+                                                        <button type="submit" class="dropdown-item">
+                                                            <i class="bi bi-power @(service.IsAtivo ? "text-warning" : "text-success")"></i>
+                                                            @(service.IsAtivo ? "Desativar" : "Ativar")
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="#">
+                                                        <i class="bi bi-trash"></i> Eliminar
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">@service.Nome</h5>
+                                    <p class="card-text text-muted small mb-3">
+                                        @Truncate(service.Descricao, 100)
+                                    </p>
+
+                                    <div class="mb-3">
+                                        <span class="badge bg-info">
+                                            <i class="bi bi-tag me-1"></i>@service.Categoria
+                                        </span>
+                                        @if (service.Profissional != null) {
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-person me-1"></i>@service.Profissional.Nome
+                                            </span>
+                                        }
+                                    </div>
+
+                                    @if (service.ExemplosTrabalhos?.Any() == true) {
+                                        <div class="mb-3">
+                                            <small class="text-muted d-block mb-1">
+                                                <i class="bi bi-images"></i> Exemplos de Trabalho:
+                                            </small>
+                                            <div class="d-flex gap-1">
+                                                @foreach (var exemplo in service.ExemplosTrabalhos.Take(3)) {
+                                                    <div class="bg-light rounded border"
+                                                         style="width: 60px; height: 60px; overflow: hidden;">
+                                                        <div class="d-flex align-items-center justify-content-center h-100">
+                                                            <i class="bi bi-file-earmark-image text-muted"></i>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                @if (service.ExemplosTrabalhos.Count > 3) {
+                                                    <div class="bg-light rounded border d-flex align-items-center justify-content-center"
+                                                         style="width: 60px; height: 60px;">
+                                                        <small class="text-muted">+@(service.ExemplosTrabalhos.Count - 3)</small>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+
+                                    <div class="small text-muted">
+                                        <div class="d-flex justify-content-between">
+                                            <span>
+                                                <i class="bi bi-calendar me-1"></i>
+                                                Criado: @service.DataCriacao.ToString("dd/MM/yyyy")
+                                            </span>
+                                            <span>
+                                                <i class="bi bi-eye me-1"></i>
+                                                0 visualizações
+                                            </span>
+                                        </div>
+                                        @if (service.DataAtualizacao.HasValue) {
+                                            <div>
+                                                <i class="bi bi-arrow-clockwise me-1"></i>
+                                                Atualizado: @service.DataAtualizacao.Value.ToString("dd/MM/yyyy")
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-white border-top-0">
+                                    <div class="d-flex justify-content-between">
+                                        <a asp-action="PortfolioItems" asp-route-servicoProfissionalId="@service.Id"
+                                           class="btn btn-sm btn-outline-info">
+                                            <i class="bi bi-images"></i> Portfólio (@(service.ExemplosTrabalhos?.Count ?? 0))
+                                        </a>
+                                        <form asp-action="ToggleServicoProfissionalStatus" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@service.Id" />
+                                            <button type="submit"
+                                                    class="btn btn-sm @(service.IsAtivo ? "btn-outline-warning" : "btn-outline-success")">
+                                                <i class="bi bi-power @(service.IsAtivo ? "" : "text-success")"></i>
+                                                @(service.IsAtivo ? "Desativar" : "Ativar")
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+        <div class="card-footer bg-light py-3">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <div class="me-4">
+                            <div class="text-muted small">Valor Total do Catálogo</div>
+                            <div class="fw-bold h5 mb-0 text-primary">
+                                €@Model.Where(sp => sp.IsAtivo).Sum(sp => sp.Preco).ToString("F2")
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Serviços por Categoria</div>
+                            <div class="fw-bold h5 mb-0 text-info">
+                                @Model.GroupBy(sp => sp.Categoria).Count()
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <nav aria-label="Page navigation" class="d-flex justify-content-end">
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item disabled"><a class="page-link" href="#">Anterior</a></li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item"><a class="page-link" href="#">Próxima</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Novo Serviço -->
+<div class="modal fade" id="newServiceModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>Novo Serviço Profissional
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="newServiceForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nome do Serviço *</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Categoria *</label>
+                            <select class="form-select" required>
+                                <option value="">Selecione uma categoria</option>
+                                <option value="Design">Design</option>
+                                <option value="Desenvolvimento">Desenvolvimento</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Consultoria">Consultoria</option>
+                                <option value="Outro">Outro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Preço (€) *</label>
+                            <input type="number" class="form-control" step="0.01" min="0" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Profissional</label>
+                            <select class="form-select">
+                                <option value="">Selecione um profissional</option>
+                                <!-- Opções seriam carregadas via AJAX -->
+                            </select>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Descrição *</label>
+                            <textarea class="form-control" rows="4" required></textarea>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Detalhes Adicionais</label>
+                            <textarea class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="activateNow" checked>
+                                <label class="form-check-label" for="activateNow">
+                                    Ativar serviço imediatamente após criação
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" form="newServiceForm" class="btn btn-primary">
+                    <i class="bi bi-save me-1"></i> Criar Serviço
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            // Tooltips
+            $('[data-bs-toggle="tooltip"]').tooltip();
+
+            // Confirmação para ativar/desativar serviços
+            $('form[action*="ToggleServicoProfissionalStatus"] button').on('click', function(e) {
+                const action = $(this).closest('form').find('button').hasClass('btn-outline-warning')
+                    ? 'desativar'
+                    : 'ativar';
+                if (!confirm(`Tem certeza que deseja ${action} este serviço?`)) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+}

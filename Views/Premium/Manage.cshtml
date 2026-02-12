@@ -1,0 +1,82 @@
+﻿@* Views/Premium/Manage.cshtml *@
+@model EDSG.Controllers.ManageSubscriptionViewModel
+
+@{
+    ViewData["Title"] = "Gerir Assinatura";
+}
+
+<style>
+    .icon-xl-custom {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+<div class="container py-5">
+    <h1 class="text-center mb-5">@ViewData["Title"]</h1>
+
+    @if (TempData["SuccessMessage"] != null) {
+        <div class="alert alert-success mb-4">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Plano Atual</h5>
+            <p><strong>Plano:</strong> @Model.CurrentPlan</p>
+            <p><strong>Próxima fatura:</strong> @Model.NextBillingDate.ToString("dd/MM/yyyy")</p>
+            <p><strong>Método de pagamento:</strong> @Model.PaymentMethod</p>
+            <p><strong>Renovação automática:</strong> @(Model.AutoRenew ? "Ativada" : "Desativada")</p>
+        </div>
+    </div>
+
+    <div class="d-grid gap-2 d-md-flex">
+        <button class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#changePlanModal">
+            Alterar Plano
+        </button>
+        <button class="btn btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#paymentModal">
+            Alterar Pagamento
+        </button>
+
+        <form method="post" asp-action="Cancel" class="ms-auto">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja cancelar?')">
+                Cancelar Assinatura
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal para alterar plano -->
+<div class="modal fade" id="changePlanModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Alterar Plano</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Funcionalidade em desenvolvimento.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para alterar pagamento -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Alterar Pagamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Funcionalidade em desenvolvimento.</p>
+            </div>
+        </div>
+    </div>
+</div>

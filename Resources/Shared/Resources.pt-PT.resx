@@ -1,0 +1,281 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+		<xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+		<xsd:element name="root" msdata:IsDataSet="true">
+			<xsd:complexType>
+				<xsd:choice maxOccurs="unbounded">
+					<xsd:element name="metadata">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" />
+							</xsd:sequence>
+							<xsd:attribute name="name" use="required" type="xsd:string" />
+							<xsd:attribute name="type" type="xsd:string" />
+							<xsd:attribute name="mimetype" type="xsd:string" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="assembly">
+						<xsd:complexType>
+							<xsd:attribute name="alias" type="xsd:string" />
+							<xsd:attribute name="name" type="xsd:string" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="data">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+								<xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+							</xsd:sequence>
+							<xsd:attribute name="name" use="required" type="xsd:string" />
+							<xsd:attribute name="type" type="xsd:string" />
+							<xsd:attribute name="mimetype" type="xsd:string" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="resheader">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+							</xsd:sequence>
+							<xsd:attribute name="name" use="required" type="xsd:string" />
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:choice>
+			</xsd:complexType>
+		</xsd:element>
+	</xsd:schema>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>2.0</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+
+	<!-- Application Strings -->
+	<data name="AppName" xml:space="preserve">
+    <value>EDSG</value>
+  </data>
+	<data name="AppDescription" xml:space="preserve">
+    <value>Ecossistema Digital de Serviços Geridos</value>
+  </data>
+
+	<!-- Common UI Strings -->
+	<data name="Home" xml:space="preserve">
+    <value>Início</value>
+  </data>
+	<data name="Search" xml:space="preserve">
+    <value>Procurar</value>
+  </data>
+	<data name="About" xml:space="preserve">
+    <value>Sobre</value>
+  </data>
+	<data name="Contact" xml:space="preserve">
+    <value>Contactos</value>
+  </data>
+	<data name="Login" xml:space="preserve">
+    <value>Entrar</value>
+  </data>
+	<data name="Register" xml:space="preserve">
+    <value>Registar</value>
+  </data>
+	<data name="Logout" xml:space="preserve">
+    <value>Sair</value>
+  </data>
+	<data name="Profile" xml:space="preserve">
+    <value>Perfil</value>
+  </data>
+	<data name="Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+	<data name="Admin" xml:space="preserve">
+    <value>Admin</value>
+  </data>
+	<data name="Language" xml:space="preserve">
+    <value>Idioma</value>
+  </data>
+	<data name="Portuguese" xml:space="preserve">
+    <value>Português</value>
+  </data>
+	<data name="English" xml:space="preserve">
+    <value>Inglês</value>
+  </data>
+
+	<!-- Form Labels -->
+	<data name="Name" xml:space="preserve">
+    <value>Nome</value>
+  </data>
+	<data name="Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+	<data name="Password" xml:space="preserve">
+    <value>Palavra-passe</value>
+  </data>
+	<data name="ConfirmPassword" xml:space="preserve">
+    <value>Confirmar palavra-passe</value>
+  </data>
+	<data name="Location" xml:space="preserve">
+    <value>Localização</value>
+  </data>
+	<data name="RememberMe" xml:space="preserve">
+    <value>Lembrar-me</value>
+  </data>
+	<data name="ForgotPassword" xml:space="preserve">
+    <value>Esqueceu a palavra-passe?</value>
+  </data>
+	<data name="DontHaveAccount" xml:space="preserve">
+    <value>Não tem conta?</value>
+  </data>
+	<data name="AlreadyHaveAccount" xml:space="preserve">
+    <value>Já tem conta?</value>
+  </data>
+
+	<!-- Button Texts -->
+	<data name="Save" xml:space="preserve">
+    <value>Guardar</value>
+  </data>
+	<data name="Cancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+	<data name="Edit" xml:space="preserve">
+    <value>Editar</value>
+  </data>
+	<data name="Delete" xml:space="preserve">
+    <value>Eliminar</value>
+  </data>
+	<data name="View" xml:space="preserve">
+    <value>Ver</value>
+  </data>
+	<data name="Send" xml:space="preserve">
+    <value>Enviar</value>
+  </data>
+	<data name="Submit" xml:space="preserve">
+    <value>Submeter</value>
+  </data>
+	<data name="SearchButton" xml:space="preserve">
+    <value>Pesquisar</value>
+  </data>
+	<data name="ApplyFilters" xml:space="preserve">
+    <value>Aplicar Filtros</value>
+  </data>
+	<data name="ClearFilters" xml:space="preserve">
+    <value>Limpar Filtros</value>
+  </data>
+
+	<!-- Messages -->
+	<data name="SuccessMessage" xml:space="preserve">
+    <value>Operação realizada com sucesso!</value>
+  </data>
+	<data name="ErrorMessage" xml:space="preserve">
+    <value>Ocorreu um erro. Por favor, tente novamente.</value>
+  </data>
+	<data name="RequiredField" xml:space="preserve">
+    <value>Este campo é obrigatório.</value>
+  </data>
+	<data name="InvalidEmail" xml:space="preserve">
+    <value>Email inválido.</value>
+  </data>
+	<data name="PasswordsDontMatch" xml:space="preserve">
+    <value>As palavras-passe não coincidem.</value>
+  </data>
+
+	<!-- Dashboard -->
+	<data name="ClientMode" xml:space="preserve">
+    <value>Modo Cliente</value>
+  </data>
+	<data name="ProfessionalMode" xml:space="preserve">
+    <value>Modo Profissional</value>
+  </data>
+	<data name="SwitchToClient" xml:space="preserve">
+    <value>Mudar para Cliente</value>
+  </data>
+	<data name="SwitchToProfessional" xml:space="preserve">
+    <value>Mudar para Profissional</value>
+  </data>
+	<data name="PendingServices" xml:space="preserve">
+    <value>Serviços Pendentes</value>
+  </data>
+	<data name="ActiveServices" xml:space="preserve">
+    <value>Serviços Ativos</value>
+  </data>
+	<data name="CompletedServices" xml:space="preserve">
+    <value>Serviços Concluídos</value>
+  </data>
+	<data name="RecentMessages" xml:space="preserve">
+    <value>Mensagens Recentes</value>
+  </data>
+	<data name="Favorites" xml:space="preserve">
+    <value>Favoritos</value>
+  </data>
+	<data name="QuickActions" xml:space="preserve">
+    <value>Ações Rápidas</value>
+  </data>
+
+	<!-- Professional -->
+	<data name="Category" xml:space="preserve">
+    <value>Categoria</value>
+  </data>
+	<data name="Specialty" xml:space="preserve">
+    <value>Especialidade</value>
+  </data>
+	<data name="HourlyRate" xml:space="preserve">
+    <value>Preço por hora</value>
+  </data>
+	<data name="Bio" xml:space="preserve">
+    <value>Biografia</value>
+  </data>
+	<data name="Portfolio" xml:space="preserve">
+    <value>Portfólio</value>
+  </data>
+	<data name="Reviews" xml:space="preserve">
+    <value>Avaliações</value>
+  </data>
+	<data name="Rating" xml:space="preserve">
+    <value>Avaliação</value>
+  </data>
+
+	<!-- Service -->
+	<data name="Service" xml:space="preserve">
+    <value>Serviço</value>
+  </data>
+	<data name="Services" xml:space="preserve">
+    <value>Serviços</value>
+  </data>
+	<data name="NewService" xml:space="preserve">
+    <value>Novo Serviço</value>
+  </data>
+	<data name="ServiceTitle" xml:space="preserve">
+    <value>Título do Serviço</value>
+  </data>
+	<data name="ServiceDescription" xml:space="preserve">
+    <value>Descrição do Serviço</value>
+  </data>
+	<data name="ServicePrice" xml:space="preserve">
+    <value>Preço do Serviço</value>
+  </data>
+	<data name="ServiceStatus" xml:space="preserve">
+    <value>Estado do Serviço</value>
+  </data>
+	<data name="Pending" xml:space="preserve">
+    <value>Pendente</value>
+  </data>
+	<data name="Accepted" xml:space="preserve">
+    <value>Aceite</value>
+  </data>
+	<data name="InProgress" xml:space="preserve">
+    <value>Em Progresso</value>
+  </data>
+	<data name="Completed" xml:space="preserve">
+    <value>Concluído</value>
+  </data>
+	<data name="Cancelled" xml:space="preserve">
+    <value>Cancelado</value>
+  </data>
+</root>

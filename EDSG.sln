@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.2.11408.102
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EDSG", "EDSG.csproj", "{A25E4302-0AF3-F60B-10BC-70130A91148A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A25E4302-0AF3-F60B-10BC-70130A91148A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A25E4302-0AF3-F60B-10BC-70130A91148A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A25E4302-0AF3-F60B-10BC-70130A91148A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A25E4302-0AF3-F60B-10BC-70130A91148A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {32883EBD-FB86-4753-A952-BE44E989ACC9}
+	EndGlobalSection
+EndGlobal

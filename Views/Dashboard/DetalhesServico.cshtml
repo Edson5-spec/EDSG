@@ -1,0 +1,330 @@
+﻿@model EDSG.Models.Servico
+@{
+    ViewData["Title"] = "Detalhes do Serviço";
+    var isCliente = (bool)ViewBag.IsCliente;
+    var isProfissional = (bool)ViewBag.IsProfissional;
+    var userId = ViewBag.UserId;
+    var modo = ViewBag.Modo;
+}
+
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Dashboard" asp-action="Servicos">Serviços</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Detalhes</li>
+                </ol>
+            </nav>
+
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">@Model.Titulo</h1>
+                <span class="badge @GetEstadoBadgeClass(Model.Estado)">
+                    @Model.Estado
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Service Details Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informações do Serviço</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Cliente:</dt>
+                                <dd class="col-sm-8">@Model.Cliente.Nome</dd>
+
+                                <dt class="col-sm-4">Profissional:</dt>
+                                <dd class="col-sm-8">@Model.Profissional.Nome</dd>
+
+                                <dt class="col-sm-4">Categoria:</dt>
+                                <dd class="col-sm-8">@Model.Categoria</dd>
+
+                                <dt class="col-sm-4">Localização:</dt>
+                                <dd class="col-sm-8">@Model.Localizacao</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Preço:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="h5 text-primary">€@Model.PrecoAcordado.ToString("F2")</span>
+                                </dd>
+
+                                <dt class="col-sm-4">Data do Pedido:</dt>
+                                <dd class="col-sm-8">@Model.DataPedido.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                                @if (Model.DataAceitacao.HasValue) {
+                                    <dt class="col-sm-4">Data Aceitação:</dt>
+                                    <dd class="col-sm-8">@Model.DataAceitacao.Value.ToString("dd/MM/yyyy HH:mm")</dd>
+                                }
+
+                                @if (Model.DataConclusao.HasValue) {
+                                    <dt class="col-sm-4">Data Conclusão:</dt>
+                                    <dd class="col-sm-8">@Model.DataConclusao.Value.ToString("dd/MM/yyyy HH:mm")</dd>
+                                }
+                            </dl>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mt-4">
+                        <h6>Descrição:</h6>
+                        <p class="card-text">@Model.Descricao</p>
+                    </div>
+
+                    <!-- Professional Response -->
+                    @if (!string.IsNullOrEmpty(Model.RespostaProfissional)) {
+                        <div class="mt-4">
+                            <h6>Resposta do Profissional:</h6>
+                            <div class="alert alert-info">
+                                <p class="mb-0">@Model.RespostaProfissional</p>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Client Review -->
+                    @if (Model.Estado == EstadoServico.Concluido && Model.NotaCliente.HasValue) {
+                        <div class="mt-4">
+                            <h6>Avaliação do Cliente:</h6>
+                            <div class="alert alert-success">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="text-warning">
+                                        @for (int i = 0; i < 5; i++) {
+                                            <i class="bi @(i < Model.NotaCliente.Value ? "bi-star-fill" : "bi-star")"></i>
+                                        }
+                                    </span>
+                                    <span class="ms-2">@Model.NotaCliente.Value/5</span>
+                                </div>
+                                @if (!string.IsNullOrEmpty(Model.ComentarioCliente)) {
+                                    <p class="mb-0">"@Model.ComentarioCliente"</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Messages Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-chat-dots"></i> Comunicação</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Para discutir detalhes deste serviço, utilize o sistema de mensagens.
+                    </p>
+                    <a asp-controller="Dashboard"
+                       asp-action="Mensagens"
+                       asp-route-id="@(isCliente? Model.ProfissionalId: Model.ClienteId)"
+                       class="btn btn-outline-primary">
+                        <i class="bi bi-chat-left-text"></i> Enviar Mensagem
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Actions -->
+        <div class="col-lg-4">
+            <!-- Actions Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-lightning-charge"></i> Ações</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Common Actions -->
+                    <div class="d-grid gap-2 mb-3">
+                        <a asp-controller="Dashboard" asp-action="Servicos" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Voltar à Lista
+                        </a>
+                    </div>
+
+                    <!-- Client Actions -->
+                    @if (isCliente) {
+                        @if (Model.Estado == EstadoServico.Pendente) {
+                            <div class="d-grid gap-2 mb-3">
+                                <a asp-controller="Dashboard" asp-action="EditarServico" asp-route-id="@Model.Id"
+                                   class="btn btn-outline-warning">
+                                    <i class="bi bi-pencil"></i> Editar Serviço
+                                </a>
+
+                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelarModal">
+                                    <i class="bi bi-x-circle"></i> Cancelar Pedido
+                                </button>
+                            </div>
+                        }
+
+                        @if (Model.Estado == EstadoServico.Concluido && !Model.NotaCliente.HasValue) {
+                            <div class="d-grid gap-2">
+                                <a asp-controller="Dashboard" asp-action="AvaliarServico" asp-route-id="@Model.Id"
+                                   class="btn btn-outline-success">
+                                    <i class="bi bi-star"></i> Avaliar Serviço
+                                </a>
+                            </div>
+                        }
+                    }
+
+                    <!-- Professional Actions -->
+                    @if (isProfissional) {
+                        @if (Model.Estado == EstadoServico.Pendente) {
+                            <div class="d-grid gap-2 mb-3">
+                                <form asp-controller="Dashboard" asp-action="AceitarServico" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i class="bi bi-check-circle"></i> Aceitar Serviço
+                                    </button>
+                                </form>
+
+                                <form asp-controller="Dashboard" asp-action="RecusarServico" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-danger w-100"
+                                            onclick="return confirm('Tem certeza que deseja recusar este serviço?')">
+                                        <i class="bi bi-x-circle"></i> Recusar Serviço
+                                    </button>
+                                </form>
+                            </div>
+                        }
+
+                        @if (Model.Estado == EstadoServico.Aceite) {
+                            <div class="d-grid gap-2 mb-3">
+                                <form asp-controller="Dashboard" asp-action="IniciarServico" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="bi bi-play-circle"></i> Iniciar Trabalho
+                                    </button>
+                                </form>
+                            </div>
+                        }
+
+                        @if (Model.Estado == EstadoServico.EmProgresso) {
+                            <div class="d-grid gap-2 mb-3">
+                                <form asp-controller="Dashboard" asp-action="ConcluirServico" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i class="bi bi-check-circle"></i> Marcar como Concluído
+                                    </button>
+                                </form>
+                            </div>
+                        }
+
+                        <!-- Cancel option for professional -->
+                        @if (Model.Estado == EstadoServico.Pendente || Model.Estado == EstadoServico.Aceite ||
+                                            Model.Estado == EstadoServico.EmProgresso) {
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelarModal">
+                                    <i class="bi bi-x-circle"></i> Cancelar Serviço
+                                </button>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Status Timeline -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Histórico</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item @(Model.Estado == EstadoServico.Pendente ? "active" : "completed")">
+                            <div class="timeline-icon"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Pedido Enviado</h6>
+                                <small class="text-muted">@Model.DataPedido.ToString("dd/MM/yyyy HH:mm")</small>
+                            </div>
+                        </div>
+
+                        @if (Model.DataAceitacao.HasValue) {
+                            <div class="timeline-item @(Model.Estado == EstadoServico.Aceite || Model.Estado == EstadoServico.EmProgresso || Model.Estado == EstadoServico.Concluido ? "completed" : "")">
+                                <div class="timeline-icon"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Serviço Aceite</h6>
+                                    <small class="text-muted">@Model.DataAceitacao.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                                </div>
+                            </div>
+                        }
+
+                        @if (Model.Estado == EstadoServico.EmProgresso || Model.Estado == EstadoServico.Concluido) {
+                            <div class="timeline-item @(Model.Estado == EstadoServico.EmProgresso ? "active" : "completed")">
+                                <div class="timeline-icon"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Em Progresso</h6>
+                                </div>
+                            </div>
+                        }
+
+                        @if (Model.Estado == EstadoServico.Concluido) {
+                            <div class="timeline-item completed">
+                                <div class="timeline-icon"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Concluído</h6>
+                                    <small class="text-muted">@Model.DataConclusao.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Modal -->
+<div class="modal fade" id="cancelarModal" tabindex="-1" aria-labelledby="cancelarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelarModalLabel">Cancelar Serviço</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-controller="Dashboard" asp-action="CancelarServico" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="motivo" class="form-label">Motivo do Cancelamento (opcional):</label>
+                        <textarea class="form-control" id="motivo" name="motivo" rows="3"
+                                  placeholder="Descreva o motivo do cancelamento..."></textarea>
+                    </div>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Esta ação não pode ser desfeita. O serviço será marcado como cancelado.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
+                    <button type="submit" class="btn btn-danger">Confirmar Cancelamento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetEstadoBadgeClass(EstadoServico estado) {
+        return estado switch {
+            EstadoServico.Pendente => "badge-pendente",
+            EstadoServico.Aceite => "badge-aceite",
+            EstadoServico.EmProgresso => "badge-emprogresso",
+            EstadoServico.Concluido => "badge-concluido",
+            EstadoServico.Recusado => "badge-recusado",
+            EstadoServico.Cancelado => "badge-cancelado",
+            _ => "badge-secondary"
+        };
+    }
+}
